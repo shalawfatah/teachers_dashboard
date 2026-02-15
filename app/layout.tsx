@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   description: "The place to manage your app",
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const nrtFont = localFont({
+  src: "./nrt-bd.ttf",
+  variable: "--font-nrt",
   display: "swap",
-  subsets: ["latin"],
 });
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ku" dir="rtl" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${nrtFont.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
