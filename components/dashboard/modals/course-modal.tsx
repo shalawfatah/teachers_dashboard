@@ -97,7 +97,7 @@ export function CourseModal({
       <div className="bg-background border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
         <div className="sticky top-0 bg-background border-b px-6 py-4 flex items-center justify-between">
           <h3 className="text-xl font-semibold">
-            {editCourse ? "Edit Course" : "Add Course"}
+            {editCourse ? "نوێکردنەوەی خول" : "زیادکردنی خول"}
           </h3>
           <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg">
             <X className="w-5 h-5" />
@@ -123,7 +123,7 @@ export function CourseModal({
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">
-              Description *
+              درێژە *
             </label>
             <textarea
               value={formData.description}
@@ -176,7 +176,7 @@ export function CourseModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Thumbnail</label>
+            <label className="block text-sm font-medium mb-2">وێنە</label>
             <input
               type="file"
               accept="image/*"
@@ -205,7 +205,7 @@ export function CourseModal({
               disabled={loading}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Saving..." : editCourse ? "Update" : "Create"}
+              {loading ? "تۆمارکردن..." : editCourse ? "نوێکردنەوە" : "تۆماربکە"}
             </button>
           </div>
         </form>

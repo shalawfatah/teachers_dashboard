@@ -10,9 +10,9 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { id: "courses" as View, label: "Courses", icon: BookOpen },
-  { id: "videos" as View, label: "Videos", icon: Video },
-  { id: "students" as View, label: "Students", icon: Users },
+  { id: "courses" as View, label: "خولەکان", icon: BookOpen },
+  { id: "videos" as View, label: "ڤیدیۆکان", icon: Video },
+  { id: "students" as View, label: "خوێندکاران", icon: Users },
 ];
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {

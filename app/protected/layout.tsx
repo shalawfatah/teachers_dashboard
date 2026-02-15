@@ -8,7 +8,7 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div dir="rtl" className="min-h-screen flex flex-col">
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
         <div className="w-full max-w-7xl flex justify-between items-center p-3 px-5 text-sm">
           <Suspense>
