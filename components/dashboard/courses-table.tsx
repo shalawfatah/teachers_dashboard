@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTableData } from "./use-table-data";
+import { TableHeader } from "./table-header";
 import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
+import { Pagination } from "./pagination";
+import { useTableData } from "./use-table-data";
 
 interface Course {
   id: string;
@@ -19,6 +21,11 @@ export function CoursesTable() {
     data: courses,
     loading,
     deleteItem,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    searchQuery,
+    setSearchQuery,
   } = useTableData<Course>({ table: "courses" });
   const [viewCourse, setViewCourse] = useState<Course | null>(null);
   const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
@@ -35,7 +42,13 @@ export function CoursesTable() {
   return (
     <>
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Courses</h2>
+        <TableHeader
+          title="Courses"
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          onAdd={() => console.log("Add course")}
+          addButtonText="Add Course"
+        />
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
@@ -67,6 +80,11 @@ export function CoursesTable() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {viewCourse && (
@@ -76,7 +94,6 @@ export function CoursesTable() {
           onClose={() => setViewCourse(null)}
         />
       )}
-
       {deleteCourse && (
         <DeleteDialog
           title="Delete Course"

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTableData } from "./use-table-data";
+import { TableHeader } from "./table-header";
 import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
+import { Pagination } from "./pagination";
+import { useTableData } from "./use-table-data";
 
 interface Video {
   id: string;
@@ -20,6 +22,11 @@ export function VideosTable() {
     data: videos,
     loading,
     deleteItem,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    searchQuery,
+    setSearchQuery,
   } = useTableData<Video>({
     table: "videos",
     select: "*, courses!inner(title, teacher_id)",
@@ -40,7 +47,13 @@ export function VideosTable() {
   return (
     <>
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Videos</h2>
+        <TableHeader
+          title="Videos"
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          onAdd={() => console.log("Add video")}
+          addButtonText="Add Video"
+        />
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
@@ -72,6 +85,11 @@ export function VideosTable() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {viewVideo && (
@@ -81,7 +99,6 @@ export function VideosTable() {
           onClose={() => setViewVideo(null)}
         />
       )}
-
       {deleteVideo && (
         <DeleteDialog
           title="Delete Video"

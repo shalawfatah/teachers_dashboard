@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTableData } from "./use-table-data";
+import { TableHeader } from "./table-header";
 import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
+import { Pagination } from "./pagination";
+import { useTableData } from "./use-table-data";
 
 interface Student {
   id: string;
@@ -16,15 +18,19 @@ interface Student {
 }
 
 export function StudentsTable() {
-  const { data: students, loading, deleteItem, updateItem } = useTableData<Student>({ 
-    table: "students" 
-  });
+  const {
+    data: students,
+    loading,
+    deleteItem,
+    updateItem,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    searchQuery,
+    setSearchQuery,
+  } = useTableData<Student>({ table: "students" });
   const [viewStudent, setViewStudent] = useState<Student | null>(null);
   const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
-
-  const handleVerificationToggle = (student: Student) => {
-    updateItem(student.id, { verified: !student.verified });
-  };
 
   const handleDelete = () => {
     if (deleteStudent) {
@@ -38,7 +44,13 @@ export function StudentsTable() {
   return (
     <>
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Students</h2>
+        <TableHeader
+          title="Students"
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          onAdd={() => console.log("Add student")}
+          addButtonText="Add Student"
+        />
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
@@ -57,17 +69,20 @@ export function StudentsTable() {
                   <td className="px-4 py-3">{student.email}</td>
                   <td className="px-4 py-3">
                     <button
-                      onClick={() => handleVerificationToggle(student)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        student.verified
+                      onClick={() =>
+                        updateItem(student.id, { verified: !student.verified })
+                      }
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${student.verified
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                      }`}
+                        }`}
                     >
                       {student.verified ? "Verified" : "Unverified"}
                     </button>
                   </td>
-                  <td className="px-4 py-3">{new Date(student.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3">
+                    {new Date(student.created_at).toLocaleDateString()}
+                  </td>
                   <td className="px-4 py-3">
                     <TableActions
                       onView={() => setViewStudent(student)}
@@ -80,12 +95,20 @@ export function StudentsTable() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {viewStudent && (
-        <ViewModal title="Student Details" data={viewStudent} onClose={() => setViewStudent(null)} />
+        <ViewModal
+          title="Student Details"
+          data={viewStudent}
+          onClose={() => setViewStudent(null)}
+        />
       )}
-
       {deleteStudent && (
         <DeleteDialog
           title="Delete Student"
