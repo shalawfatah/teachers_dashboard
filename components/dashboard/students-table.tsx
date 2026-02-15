@@ -41,21 +41,21 @@ export function StudentsTable() {
     <>
       <div className="space-y-4">
         <TableHeader
-          title="Students"
+          title="خوێندکاران"
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          onAdd={() => console.log("Add student")}
-          addButtonText="Add Student"
+          onAdd={() => console.log("زیادکردنی خوێندکار")}
+          addButtonText="زیادکردنی خوێندکار"
         />
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Email</th>
-                <th className="px-4 py-3 text-left">Verified</th>
-                <th className="px-4 py-3 text-left">Created</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-left">ناو</th>
+                <th className="px-4 py-3 text-left">ئیمەیل</th>
+                <th className="px-4 py-3 text-left">پارەی واسڵکردووە</th>
+                <th className="px-4 py-3 text-left">بەروار</th>
+                <th className="px-4 py-3 text-right">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
@@ -99,15 +99,15 @@ export function StudentsTable() {
       </div>
       {viewItem && (
         <ViewModal
-          title="Student Details"
+          title="زانیاریی خوێندکار"
           data={viewItem}
           onClose={() => setViewItem(null)}
         />
       )}
       {deleteItem2 && (
         <DeleteDialog
-          title="Delete Student"
-          description={`Are you sure you want to delete "${deleteItem2.name}"?`}
+          title="سڕینەوەی خوێندکار"
+          description={`دڵنیایی دەتەوێت ئەم خوێندکارە بسڕیتەوە`}
           onConfirm={() => {
             deleteItem(deleteItem2.id);
             setDeleteItem2(null);

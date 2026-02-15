@@ -53,22 +53,22 @@ export function CoursesTable() {
     <>
       <div className="space-y-4">
         <TableHeader
-          title="Courses"
+          title="خولەکان"
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           onAdd={() => setIsModalOpen(true)}
-          addButtonText="Add Course"
+          addButtonText="زیادکردنی خول"
         />
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left">Title</th>
-                <th className="px-4 py-3 text-left">Description</th>
-                <th className="px-4 py-3 text-left">Grade</th>
-                <th className="px-4 py-3 text-left">Subject</th>
-                <th className="px-4 py-3 text-left">Created</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-left">ناونیشان</th>
+                <th className="px-4 py-3 text-left">درێژە</th>
+                <th className="px-4 py-3 text-left">پۆل</th>
+                <th className="px-4 py-3 text-left">بابەت</th>
+                <th className="px-4 py-3 text-left">بەروار</th>
+                <th className="px-4 py-3 text-right">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
@@ -113,7 +113,7 @@ export function CoursesTable() {
       />
       {viewCourse && (
         <ViewModal
-          title="Course Details"
+          title="زانیاریی دەربارەی خول"
           data={viewCourse}
           onClose={() => setViewCourse(null)}
         />
@@ -121,7 +121,7 @@ export function CoursesTable() {
       {deleteCourse && (
         <DeleteDialog
           title="Delete Course"
-          description={`Are you sure you want to delete "${deleteCourse.title}"?`}
+          description={`دڵنیای دەتەوێت ئەم خولە بسڕیتەوە؟`}
           onConfirm={() => {
             deleteItem(deleteCourse.id);
             setDeleteCourse(null);

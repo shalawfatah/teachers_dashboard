@@ -57,22 +57,22 @@ export function VideosTable() {
     <>
       <div className="space-y-4">
         <TableHeader
-          title="Videos"
+          title="ڤیدیۆ"
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           onAdd={() => setIsModalOpen(true)}
-          addButtonText="Add Video"
+          addButtonText="زیادکردنی ڤیدیۆ"
         />
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left">Title</th>
-                <th className="px-4 py-3 text-left">Course</th>
-                <th className="px-4 py-3 text-left">Link</th>
-                <th className="px-4 py-3 text-left">Free</th>
-                <th className="px-4 py-3 text-left">Created</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-left">ناونیشان</th>
+                <th className="px-4 py-3 text-left">خول</th>
+                <th className="px-4 py-3 text-left">لینک</th>
+                <th className="px-4 py-3 text-left">خۆڕایی</th>
+                <th className="px-4 py-3 text-left">بەروار</th>
+                <th className="px-4 py-3 text-right">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
@@ -121,15 +121,15 @@ export function VideosTable() {
       />
       {viewVideo && (
         <ViewModal
-          title="Video Details"
+          title="زانیاریی لەسەر ڤیدیۆ"
           data={viewVideo}
           onClose={() => setViewVideo(null)}
         />
       )}
       {deleteVideo && (
         <DeleteDialog
-          title="Delete Video"
-          description={`Are you sure you want to delete "${deleteVideo.title}"?`}
+          title="سڕینەوەی ڤیدیۆ"
+          description={`"${deleteVideo.title}" دڵنیای دەتەوێت ئەم ڤیدیۆیە بسڕیتەوە؟`}
           onConfirm={() => {
             deleteItem(deleteVideo.id);
             setDeleteVideo(null);
