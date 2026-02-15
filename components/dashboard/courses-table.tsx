@@ -7,31 +7,45 @@ import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
+import { CourseModal } from "./modals/course-modal";
 
 interface Course {
   id: string;
   title: string;
   description: string;
+  grade: string;
+  subject: string;
   teacher_id: string;
   created_at: string;
+  thumbnail?: string;
 }
 
 export function CoursesTable() {
   const {
-    data,
+    data: courses,
     loading,
     deleteItem,
-    searchQuery,
-    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,
-  } = useTableData<Course>({
-    table: "courses",
-    searchFields: ["title", "description"],
-  });
-  const [viewItem, setViewItem] = useState<Course | null>(null);
-  const [deleteItem2, setDeleteItem2] = useState<Course | null>(null);
+    searchQuery,
+    setSearchQuery,
+    refetch,
+  } = useTableData<Course>({ table: "courses" });
+  const [viewCourse, setViewCourse] = useState<Course | null>(null);
+  const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editCourse, setEditCourse] = useState<Course | null>(null);
+
+  const handleEdit = (course: Course) => {
+    setEditCourse(course);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditCourse(null);
+  };
 
   if (loading) return <div>Loading courses...</div>;
 
@@ -42,7 +56,7 @@ export function CoursesTable() {
           title="Courses"
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          onAdd={() => console.log("Add course")}
+          onAdd={() => setIsModalOpen(true)}
           addButtonText="Add Course"
         />
         <div className="border rounded-lg">
@@ -51,24 +65,29 @@ export function CoursesTable() {
               <tr>
                 <th className="px-4 py-3 text-left">Title</th>
                 <th className="px-4 py-3 text-left">Description</th>
+                <th className="px-4 py-3 text-left">Grade</th>
+                <th className="px-4 py-3 text-left">Subject</th>
                 <th className="px-4 py-3 text-left">Created</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((course) => (
+              {courses.map((course) => (
                 <tr key={course.id} className="border-b last:border-0">
                   <td className="px-4 py-3">{course.title}</td>
                   <td className="px-4 py-3 max-w-md truncate">
                     {course.description}
                   </td>
+                  <td className="px-4 py-3 capitalize">{course.grade}</td>
+                  <td className="px-4 py-3 capitalize">{course.subject}</td>
                   <td className="px-4 py-3">
                     {new Date(course.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
                     <TableActions
-                      onView={() => setViewItem(course)}
-                      onDelete={() => setDeleteItem2(course)}
+                      onView={() => setViewCourse(course)}
+                      onEdit={() => handleEdit(course)}
+                      onDelete={() => setDeleteCourse(course)}
                     />
                   </td>
                 </tr>
@@ -82,22 +101,32 @@ export function CoursesTable() {
           onPageChange={setCurrentPage}
         />
       </div>
-      {viewItem && (
+
+      <CourseModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={() => {
+          refetch();
+          handleModalClose();
+        }}
+        editCourse={editCourse}
+      />
+      {viewCourse && (
         <ViewModal
           title="Course Details"
-          data={viewItem}
-          onClose={() => setViewItem(null)}
+          data={viewCourse}
+          onClose={() => setViewCourse(null)}
         />
       )}
-      {deleteItem2 && (
+      {deleteCourse && (
         <DeleteDialog
           title="Delete Course"
-          description={`Are you sure you want to delete "${deleteItem2.title}"?`}
+          description={`Are you sure you want to delete "${deleteCourse.title}"?`}
           onConfirm={() => {
-            deleteItem(deleteItem2.id);
-            setDeleteItem2(null);
+            deleteItem(deleteCourse.id);
+            setDeleteCourse(null);
           }}
-          onCancel={() => setDeleteItem2(null)}
+          onCancel={() => setDeleteCourse(null)}
         />
       )}
     </>
