@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Upload } from "lucide-react";
 import {
   uploadVideoThumbnail,
+  uploadVideoToBunny,
   getTeacherCourses,
   saveVideo,
 } from "./video-helpers";
@@ -30,74 +31,73 @@ export function VideoModal({
 }: VideoModalProps) {
   const [formData, setFormData] = useState({
     title: "",
-    link: "",
     course_id: "",
     free: false,
   });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
   const [courses, setCourses] = useState<Array<{ id: string; title: string }>>(
     [],
   );
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      loadCourses();
+      getTeacherCourses()
+        .then(setCourses)
+        .catch(() => setError("Failed to load courses"));
       if (editVideo) {
         setFormData({
           title: editVideo.title,
-          link: editVideo.link,
           course_id: editVideo.course_id,
           free: editVideo.free,
         });
         setThumbnailPreview(editVideo.thumbnail || "");
       } else {
-        setFormData({ title: "", link: "", course_id: "", free: false });
+        setFormData({ title: "", course_id: "", free: false });
         setThumbnailPreview("");
+        setVideoFile(null);
       }
     }
   }, [editVideo, isOpen]);
 
-  const loadCourses = async () => {
-    try {
-      const data = await getTeacherCourses();
-      setCourses(data);
-    } catch (err: any) {
-      setError("Failed to load courses");
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setThumbnailFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setThumbnailPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editVideo && !videoFile) return setError("Please select a video file");
     setError("");
     setLoading(true);
-
+    setProgress(0);
     try {
+      let videoLink = editVideo?.link || "";
+      if (videoFile && !editVideo) {
+        setProgress(25);
+        videoLink = await uploadVideoToBunny(videoFile, (p) =>
+          setProgress(25 + p * 0.5),
+        );
+        setProgress(75);
+      }
       let thumbnailUrl = editVideo?.thumbnail || "";
       if (thumbnailFile) {
         const url = await uploadVideoThumbnail(thumbnailFile);
         if (url) thumbnailUrl = url;
       }
-
-      await saveVideo(formData, thumbnailUrl, editVideo?.id);
+      setProgress(90);
+      await saveVideo(
+        { ...formData, link: videoLink },
+        thumbnailUrl,
+        editVideo?.id,
+      );
+      setProgress(100);
       onSuccess();
       onClose();
     } catch (err: any) {
       setError(err.message || "Failed to save video");
     } finally {
       setLoading(false);
+      setProgress(0);
     }
   };
 
@@ -108,9 +108,13 @@ export function VideoModal({
       <div className="bg-background border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
         <div className="sticky top-0 bg-background border-b px-6 py-4 flex items-center justify-between">
           <h3 className="text-xl font-semibold">
-            {editVideo ? "Edit Video" : "Add Video"}
+            {editVideo ? "Edit Video" : "Upload Video"}
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg">
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="p-2 hover:bg-muted rounded-lg"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -118,6 +122,42 @@ export function VideoModal({
           {error && (
             <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
               {error}
+            </div>
+          )}
+          {!editVideo && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Video File *
+              </label>
+              <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      setVideoFile(f);
+                      if (!formData.title)
+                        setFormData({
+                          ...formData,
+                          title: f.name.replace(/\.[^/.]+$/, ""),
+                        });
+                    }
+                  }}
+                  className="hidden"
+                  id="video-upload"
+                  required
+                />
+                <label
+                  htmlFor="video-upload"
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <Upload className="w-8 h-8 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {videoFile ? videoFile.name : "Click to upload video"}
+                  </span>
+                </label>
+              </div>
             </div>
           )}
           <div>
@@ -151,26 +191,19 @@ export function VideoModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Video Link (Bunny.net) *
-            </label>
-            <input
-              type="url"
-              value={formData.link}
-              onChange={(e) =>
-                setFormData({ ...formData, link: e.target.value })
-              }
-              required
-              placeholder="https://..."
-              className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          <div>
             <label className="block text-sm font-medium mb-2">Thumbnail</label>
             <input
               type="file"
               accept="image/*"
-              onChange={handleFileChange}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) {
+                  setThumbnailFile(f);
+                  const r = new FileReader();
+                  r.onloadend = () => setThumbnailPreview(r.result as string);
+                  r.readAsDataURL(f);
+                }
+              }}
               className="w-full px-3 py-2 border rounded-lg bg-background"
             />
             {thumbnailPreview && (
@@ -195,6 +228,20 @@ export function VideoModal({
               Free video
             </label>
           </div>
+          {loading && progress > 0 && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Uploading...</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
           <div className="flex gap-3 justify-end pt-4">
             <button
               type="button"
@@ -209,7 +256,7 @@ export function VideoModal({
               disabled={loading}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Saving..." : editVideo ? "Update" : "Create"}
+              {loading ? "Uploading..." : editVideo ? "Update" : "Upload"}
             </button>
           </div>
         </form>
