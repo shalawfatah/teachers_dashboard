@@ -82,7 +82,9 @@ export function TeacherAvatar() {
     );
   }
 
-  const avatarUrl = teacher.thumbnail;
+  // thumbnail now stores full URL, use it directly
+  const avatarUrl = teacher.thumbnail || null;
+
   const initials = teacher.name
     .split(" ")
     .map((n) => n[0])

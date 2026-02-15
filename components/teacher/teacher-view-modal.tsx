@@ -36,8 +36,10 @@ export function TeacherViewModal({
 
   if (!isOpen) return null;
 
-  const coverUrl = teacher.cover_img;
-  const thumbnailUrl = teacher.thumbnail;
+  // thumbnail and cover_img now store full URLs, use them directly
+  const coverUrl = teacher.cover_img || null;
+  const thumbnailUrl = teacher.thumbnail || null;
+
   const initials = teacher.name
     .split(" ")
     .map((n) => n[0])

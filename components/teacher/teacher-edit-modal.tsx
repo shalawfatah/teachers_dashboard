@@ -101,42 +101,67 @@ export function TeacherEditModal({
 
       // Upload thumbnail if selected
       if (thumbnailFile) {
-        const fileExt = thumbnailFile.name.split(".").pop();
-        const fileName = `thumbnails/${teacher.id}-${Date.now()}.${fileExt}`;
+        const fileExt =
+          thumbnailFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const fileName = `${teacher.id}_thumbnail_${Date.now()}.${fileExt}`;
+        const filePath = `thumbnails/${fileName}`;
 
         // Delete old thumbnail if exists
         if (teacher.thumbnail) {
-          await supabase.storage
-            .from("teacher-images")
-            .remove([teacher.thumbnail]);
+          // Extract the path from the full URL to delete
+          const oldPath = teacher.thumbnail.split("/teacher-images/")[1];
+          if (oldPath) {
+            await supabase.storage.from("teacher-images").remove([oldPath]);
+          }
         }
 
         const { error: uploadError } = await supabase.storage
           .from("teacher-images")
-          .upload(fileName, thumbnailFile);
+          .upload(filePath, thumbnailFile, {
+            contentType: `image/${fileExt === "jpg" ? "jpeg" : fileExt}`,
+            upsert: false,
+          });
 
         if (uploadError) throw uploadError;
-        thumbnailPath = fileName;
+
+        // Get the public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("teacher-images").getPublicUrl(filePath);
+
+        thumbnailPath = publicUrl; // Save full URL
       }
 
       // Upload cover if selected
       if (coverFile) {
-        const fileExt = coverFile.name.split(".").pop();
-        const fileName = `covers/${teacher.id}-${Date.now()}.${fileExt}`;
+        const fileExt = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const fileName = `${teacher.id}_cover_${Date.now()}.${fileExt}`;
+        const filePath = `covers/${fileName}`;
 
         // Delete old cover if exists
         if (teacher.cover_img) {
-          await supabase.storage
-            .from("teacher-images")
-            .remove([teacher.cover_img]);
+          // Extract the path from the full URL to delete
+          const oldPath = teacher.cover_img.split("/teacher-images/")[1];
+          if (oldPath) {
+            await supabase.storage.from("teacher-images").remove([oldPath]);
+          }
         }
 
         const { error: uploadError } = await supabase.storage
           .from("teacher-images")
-          .upload(fileName, coverFile);
+          .upload(filePath, coverFile, {
+            contentType: `image/${fileExt === "jpg" ? "jpeg" : fileExt}`,
+            upsert: false,
+          });
 
         if (uploadError) throw uploadError;
-        coverPath = fileName;
+
+        // Get the public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("teacher-images").getPublicUrl(filePath);
+
+        coverPath = publicUrl; // Save full URL
       }
 
       // Update teacher record
@@ -164,13 +189,9 @@ export function TeacherEditModal({
 
   if (!isOpen) return null;
 
-  const currentThumbnailUrl = teacher.thumbnail
-    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/teacher-images/thumbnails/${teacher.thumbnail}`
-    : null;
-
-  const currentCoverUrl = teacher.cover_img
-    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/teacher-images/covers/${teacher.cover_img}`
-    : null;
+  // thumbnail and cover_img now store full URLs, use them directly
+  const currentThumbnailUrl = teacher.thumbnail || null;
+  const currentCoverUrl = teacher.cover_img || null;
 
   return (
     <div
