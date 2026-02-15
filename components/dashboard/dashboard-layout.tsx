@@ -12,9 +12,9 @@ export function DashboardLayout() {
   const [activeView, setActiveView] = useState<View>("courses");
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] w-full max-w-7xl mx-auto">
+    <div className="flex w-full min-h-[calc(100vh-8rem)]">
       <Sidebar activeView={activeView} onViewChange={setActiveView} />
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
         {activeView === "courses" && <CoursesTable />}
         {activeView === "videos" && <VideosTable />}
         {activeView === "students" && <StudentsTable />}

@@ -7,34 +7,49 @@ import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
+import { VideoModal } from "./video-modals/video-modal";
 
 interface Video {
   id: string;
   title: string;
-  url: string;
+  link: string;
   course_id: string;
+  free: boolean;
   created_at: string;
+  thumbnail?: string;
   courses?: { title: string };
 }
 
 export function VideosTable() {
   const {
-    data,
+    data: videos,
     loading,
     deleteItem,
-    searchQuery,
-    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,
+    searchQuery,
+    setSearchQuery,
+    refetch,
   } = useTableData<Video>({
     table: "videos",
     select: "*, courses!inner(title, teacher_id)",
     filterByTeacher: false,
-    searchFields: ["title", "url", "courses.title"],
   });
-  const [viewItem, setViewItem] = useState<Video | null>(null);
-  const [deleteItem2, setDeleteItem2] = useState<Video | null>(null);
+  const [viewVideo, setViewVideo] = useState<Video | null>(null);
+  const [deleteVideo, setDeleteVideo] = useState<Video | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editVideo, setEditVideo] = useState<Video | null>(null);
+
+  const handleEdit = (video: Video) => {
+    setEditVideo(video);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditVideo(null);
+  };
 
   if (loading) return <div>Loading videos...</div>;
 
@@ -45,7 +60,7 @@ export function VideosTable() {
           title="Videos"
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          onAdd={() => console.log("Add video")}
+          onAdd={() => setIsModalOpen(true)}
           addButtonText="Add Video"
         />
         <div className="border rounded-lg">
@@ -54,24 +69,33 @@ export function VideosTable() {
               <tr>
                 <th className="px-4 py-3 text-left">Title</th>
                 <th className="px-4 py-3 text-left">Course</th>
-                <th className="px-4 py-3 text-left">URL</th>
+                <th className="px-4 py-3 text-left">Link</th>
+                <th className="px-4 py-3 text-left">Free</th>
                 <th className="px-4 py-3 text-left">Created</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((video) => (
+              {videos.map((video) => (
                 <tr key={video.id} className="border-b last:border-0">
                   <td className="px-4 py-3">{video.title}</td>
                   <td className="px-4 py-3">{video.courses?.title}</td>
-                  <td className="px-4 py-3 max-w-xs truncate">{video.url}</td>
+                  <td className="px-4 py-3 max-w-xs truncate">{video.link}</td>
+                  <td className="px-4 py-3">
+                    {video.free ? (
+                      <span className="text-green-600">Yes</span>
+                    ) : (
+                      <span className="text-muted-foreground">No</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {new Date(video.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
                     <TableActions
-                      onView={() => setViewItem(video)}
-                      onDelete={() => setDeleteItem2(video)}
+                      onView={() => setViewVideo(video)}
+                      onEdit={() => handleEdit(video)}
+                      onDelete={() => setDeleteVideo(video)}
                     />
                   </td>
                 </tr>
@@ -85,22 +109,32 @@ export function VideosTable() {
           onPageChange={setCurrentPage}
         />
       </div>
-      {viewItem && (
+
+      <VideoModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={() => {
+          refetch();
+          handleModalClose();
+        }}
+        editVideo={editVideo}
+      />
+      {viewVideo && (
         <ViewModal
           title="Video Details"
-          data={viewItem}
-          onClose={() => setViewItem(null)}
+          data={viewVideo}
+          onClose={() => setViewVideo(null)}
         />
       )}
-      {deleteItem2 && (
+      {deleteVideo && (
         <DeleteDialog
           title="Delete Video"
-          description={`Are you sure you want to delete "${deleteItem2.title}"?`}
+          description={`Are you sure you want to delete "${deleteVideo.title}"?`}
           onConfirm={() => {
-            deleteItem(deleteItem2.id);
-            setDeleteItem2(null);
+            deleteItem(deleteVideo.id);
+            setDeleteVideo(null);
           }}
-          onCancel={() => setDeleteItem2(null)}
+          onCancel={() => setDeleteVideo(null)}
         />
       )}
     </>
