@@ -83,9 +83,9 @@ export function VideosTable() {
                   <td className="px-4 py-3 max-w-xs truncate">{video.link}</td>
                   <td className="px-4 py-3">
                     {video.free ? (
-                      <span className="text-green-600">Yes</span>
+                      <span className="text-green-600">بەڵێ</span>
                     ) : (
-                      <span className="text-muted-foreground">No</span>
+                      <span className="text-muted-foreground">نەخێر</span>
                     )}
                   </td>
                   <td className="px-4 py-3">

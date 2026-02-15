@@ -18,6 +18,11 @@ const nrtFont = localFont({
   variable: "--font-nrt",
   display: "swap",
 });
+const goranFont = localFont({
+  src: "./kgoran.ttf",
+  variable: "--font-kgoran",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -26,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ku" dir="rtl" suppressHydrationWarning>
-      <body className={`${nrtFont.className} antialiased`}>
+      <body className={`${goranFont.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
