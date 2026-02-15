@@ -73,7 +73,7 @@ export function StudentsTable() {
                           : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
                         }`}
                     >
-                      {student.verified ? "Verified" : "Unverified"}
+                      {student.verified ? "واسڵکراوە" : "واسڵ نەکراوە"}
                     </button>
                   </td>
                   <td className="px-4 py-3">

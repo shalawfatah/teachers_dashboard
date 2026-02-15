@@ -13,7 +13,7 @@ export function TableActions({
   onView,
   onEdit,
   onDelete,
-  hideEdit,
+  hideEdit = false,
 }: TableActionsProps) {
   return (
     <div className="flex justify-end gap-2">
@@ -21,6 +21,7 @@ export function TableActions({
         onClick={onView}
         className="p-2 hover:bg-muted rounded-lg transition-colors"
         title="View details"
+        type="button"
       >
         <Eye className="w-4 h-4" />
       </button>
@@ -29,6 +30,7 @@ export function TableActions({
           onClick={onEdit}
           className="p-2 hover:bg-muted rounded-lg transition-colors"
           title="Edit"
+          type="button"
         >
           <Edit className="w-4 h-4" />
         </button>
@@ -37,6 +39,7 @@ export function TableActions({
         onClick={onDelete}
         className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors"
         title="Delete"
+        type="button"
       >
         <Trash2 className="w-4 h-4" />
       </button>

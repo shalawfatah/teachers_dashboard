@@ -1,5 +1,6 @@
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { TeacherAvatar } from "@/components/teacher/teacher-avatar";
 import { Suspense } from "react";
 
 export default function ProtectedLayout({
@@ -14,11 +15,10 @@ export default function ProtectedLayout({
           <Suspense>
             <AuthButton />
           </Suspense>
+          <TeacherAvatar />
         </div>
       </nav>
-
       <div className="flex-1">{children}</div>
-
       <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
         <p>
           Powered by{" "}

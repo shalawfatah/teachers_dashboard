@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
-import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { CourseModal } from "./modals/course-modal";
+import { Eye, Trash2, Edit } from "lucide-react";
 
 interface Course {
   id: string;
@@ -32,6 +32,7 @@ export function CoursesTable() {
     setSearchQuery,
     refetch,
   } = useTableData<Course>({ table: "courses" });
+
   const [viewCourse, setViewCourse] = useState<Course | null>(null);
   const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,11 +85,33 @@ export function CoursesTable() {
                     {new Date(course.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <TableActions
-                      onView={() => setViewCourse(course)}
-                      onEdit={() => handleEdit(course)}
-                      onDelete={() => setDeleteCourse(course)}
-                    />
+                    {/* Inline action buttons - no separate component */}
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => setViewCourse(course)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                        title="View details"
+                        type="button"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(course)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                        title="Edit"
+                        type="button"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteCourse(course)}
+                        className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors"
+                        title="Delete"
+                        type="button"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -111,6 +134,7 @@ export function CoursesTable() {
         }}
         editCourse={editCourse}
       />
+
       {viewCourse && (
         <ViewModal
           title="زانیاریی دەربارەی خول"
@@ -118,6 +142,7 @@ export function CoursesTable() {
           onClose={() => setViewCourse(null)}
         />
       )}
+
       {deleteCourse && (
         <DeleteDialog
           title="Delete Course"

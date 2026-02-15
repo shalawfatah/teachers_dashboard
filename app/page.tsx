@@ -1,6 +1,5 @@
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { DashboardLayout } from "@/components/dashboard";
 import { Suspense } from "react";
 
 export default function Home() {

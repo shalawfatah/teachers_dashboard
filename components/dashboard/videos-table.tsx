@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
-import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { VideoModal } from "./video-modals/video-modal";
+import { Eye, Trash2, Edit } from "lucide-react";
 
 interface Video {
   id: string;
@@ -92,11 +92,32 @@ export function VideosTable() {
                     {new Date(video.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <TableActions
-                      onView={() => setViewVideo(video)}
-                      onEdit={() => handleEdit(video)}
-                      onDelete={() => setDeleteVideo(video)}
-                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => setViewVideo(video)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                        title="View details"
+                        type="button"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(video)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                        title="Edit"
+                        type="button"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteVideo(video)}
+                        className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors"
+                        title="Delete"
+                        type="button"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
