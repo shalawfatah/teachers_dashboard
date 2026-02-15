@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
 import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
-import { useTableData } from "./use-table-data";
 
 interface Video {
   id: string;
@@ -19,28 +19,22 @@ interface Video {
 
 export function VideosTable() {
   const {
-    data: videos,
+    data,
     loading,
     deleteItem,
+    searchQuery,
+    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,
-    searchQuery,
-    setSearchQuery,
   } = useTableData<Video>({
     table: "videos",
     select: "*, courses!inner(title, teacher_id)",
     filterByTeacher: false,
+    searchFields: ["title", "url", "courses.title"],
   });
-  const [viewVideo, setViewVideo] = useState<Video | null>(null);
-  const [deleteVideo, setDeleteVideo] = useState<Video | null>(null);
-
-  const handleDelete = () => {
-    if (deleteVideo) {
-      deleteItem(deleteVideo.id);
-      setDeleteVideo(null);
-    }
-  };
+  const [viewItem, setViewItem] = useState<Video | null>(null);
+  const [deleteItem2, setDeleteItem2] = useState<Video | null>(null);
 
   if (loading) return <div>Loading videos...</div>;
 
@@ -66,7 +60,7 @@ export function VideosTable() {
               </tr>
             </thead>
             <tbody>
-              {videos.map((video) => (
+              {data.map((video) => (
                 <tr key={video.id} className="border-b last:border-0">
                   <td className="px-4 py-3">{video.title}</td>
                   <td className="px-4 py-3">{video.courses?.title}</td>
@@ -76,8 +70,8 @@ export function VideosTable() {
                   </td>
                   <td className="px-4 py-3">
                     <TableActions
-                      onView={() => setViewVideo(video)}
-                      onDelete={() => setDeleteVideo(video)}
+                      onView={() => setViewItem(video)}
+                      onDelete={() => setDeleteItem2(video)}
                     />
                   </td>
                 </tr>
@@ -91,20 +85,22 @@ export function VideosTable() {
           onPageChange={setCurrentPage}
         />
       </div>
-
-      {viewVideo && (
+      {viewItem && (
         <ViewModal
           title="Video Details"
-          data={viewVideo}
-          onClose={() => setViewVideo(null)}
+          data={viewItem}
+          onClose={() => setViewItem(null)}
         />
       )}
-      {deleteVideo && (
+      {deleteItem2 && (
         <DeleteDialog
           title="Delete Video"
-          description={`Are you sure you want to delete "${deleteVideo.title}"?`}
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteVideo(null)}
+          description={`Are you sure you want to delete "${deleteItem2.title}"?`}
+          onConfirm={() => {
+            deleteItem(deleteItem2.id);
+            setDeleteItem2(null);
+          }}
+          onCancel={() => setDeleteItem2(null)}
         />
       )}
     </>

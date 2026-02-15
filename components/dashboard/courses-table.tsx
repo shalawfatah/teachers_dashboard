@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
 import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
-import { useTableData } from "./use-table-data";
 
 interface Course {
   id: string;
@@ -18,24 +18,20 @@ interface Course {
 
 export function CoursesTable() {
   const {
-    data: courses,
+    data,
     loading,
     deleteItem,
+    searchQuery,
+    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,
-    searchQuery,
-    setSearchQuery,
-  } = useTableData<Course>({ table: "courses" });
-  const [viewCourse, setViewCourse] = useState<Course | null>(null);
-  const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
-
-  const handleDelete = () => {
-    if (deleteCourse) {
-      deleteItem(deleteCourse.id);
-      setDeleteCourse(null);
-    }
-  };
+  } = useTableData<Course>({
+    table: "courses",
+    searchFields: ["title", "description"],
+  });
+  const [viewItem, setViewItem] = useState<Course | null>(null);
+  const [deleteItem2, setDeleteItem2] = useState<Course | null>(null);
 
   if (loading) return <div>Loading courses...</div>;
 
@@ -60,7 +56,7 @@ export function CoursesTable() {
               </tr>
             </thead>
             <tbody>
-              {courses.map((course) => (
+              {data.map((course) => (
                 <tr key={course.id} className="border-b last:border-0">
                   <td className="px-4 py-3">{course.title}</td>
                   <td className="px-4 py-3 max-w-md truncate">
@@ -71,8 +67,8 @@ export function CoursesTable() {
                   </td>
                   <td className="px-4 py-3">
                     <TableActions
-                      onView={() => setViewCourse(course)}
-                      onDelete={() => setDeleteCourse(course)}
+                      onView={() => setViewItem(course)}
+                      onDelete={() => setDeleteItem2(course)}
                     />
                   </td>
                 </tr>
@@ -86,20 +82,22 @@ export function CoursesTable() {
           onPageChange={setCurrentPage}
         />
       </div>
-
-      {viewCourse && (
+      {viewItem && (
         <ViewModal
           title="Course Details"
-          data={viewCourse}
-          onClose={() => setViewCourse(null)}
+          data={viewItem}
+          onClose={() => setViewItem(null)}
         />
       )}
-      {deleteCourse && (
+      {deleteItem2 && (
         <DeleteDialog
           title="Delete Course"
-          description={`Are you sure you want to delete "${deleteCourse.title}"?`}
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteCourse(null)}
+          description={`Are you sure you want to delete "${deleteItem2.title}"?`}
+          onConfirm={() => {
+            deleteItem(deleteItem2.id);
+            setDeleteItem2(null);
+          }}
+          onCancel={() => setDeleteItem2(null)}
         />
       )}
     </>

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
 import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
-import { useTableData } from "./use-table-data";
 
 interface Student {
   id: string;
@@ -19,25 +19,21 @@ interface Student {
 
 export function StudentsTable() {
   const {
-    data: students,
+    data,
     loading,
     deleteItem,
     updateItem,
+    searchQuery,
+    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,
-    searchQuery,
-    setSearchQuery,
-  } = useTableData<Student>({ table: "students" });
-  const [viewStudent, setViewStudent] = useState<Student | null>(null);
-  const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
-
-  const handleDelete = () => {
-    if (deleteStudent) {
-      deleteItem(deleteStudent.id);
-      setDeleteStudent(null);
-    }
-  };
+  } = useTableData<Student>({
+    table: "students",
+    searchFields: ["name", "email"],
+  });
+  const [viewItem, setViewItem] = useState<Student | null>(null);
+  const [deleteItem2, setDeleteItem2] = useState<Student | null>(null);
 
   if (loading) return <div>Loading students...</div>;
 
@@ -63,7 +59,7 @@ export function StudentsTable() {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => (
+              {data.map((student) => (
                 <tr key={student.id} className="border-b last:border-0">
                   <td className="px-4 py-3">{student.name}</td>
                   <td className="px-4 py-3">{student.email}</td>
@@ -85,8 +81,8 @@ export function StudentsTable() {
                   </td>
                   <td className="px-4 py-3">
                     <TableActions
-                      onView={() => setViewStudent(student)}
-                      onDelete={() => setDeleteStudent(student)}
+                      onView={() => setViewItem(student)}
+                      onDelete={() => setDeleteItem2(student)}
                       hideEdit
                     />
                   </td>
@@ -101,20 +97,22 @@ export function StudentsTable() {
           onPageChange={setCurrentPage}
         />
       </div>
-
-      {viewStudent && (
+      {viewItem && (
         <ViewModal
           title="Student Details"
-          data={viewStudent}
-          onClose={() => setViewStudent(null)}
+          data={viewItem}
+          onClose={() => setViewItem(null)}
         />
       )}
-      {deleteStudent && (
+      {deleteItem2 && (
         <DeleteDialog
           title="Delete Student"
-          description={`Are you sure you want to delete "${deleteStudent.name}"?`}
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteStudent(null)}
+          description={`Are you sure you want to delete "${deleteItem2.name}"?`}
+          onConfirm={() => {
+            deleteItem(deleteItem2.id);
+            setDeleteItem2(null);
+          }}
+          onCancel={() => setDeleteItem2(null)}
         />
       )}
     </>

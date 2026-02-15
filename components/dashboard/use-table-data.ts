@@ -1,102 +1,100 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface UseTableDataOptions {
   table: string;
   select?: string;
   filterByTeacher?: boolean;
   orderBy?: string;
-  pageSize?: number;
+  itemsPerPage?: number;
+  searchFields?: string[];
 }
 
-export function useTableData<T>(options: UseTableDataOptions) {
-  const {
-    table,
-    select = "*",
-    filterByTeacher = true,
+export function useTableData<T extends Record<string, any>>(options: UseTableDataOptions) {
+  const { 
+    table, 
+    select = "*", 
+    filterByTeacher = true, 
     orderBy = "created_at",
-    pageSize = 10,
+    itemsPerPage = 10,
+    searchFields = []
   } = options;
-
+  
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchData();
-  }, [table, currentPage, searchQuery]);
+  }, [table]);
 
   async function fetchData() {
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { data: { user } } = await supabase.auth.getUser();
+    
     if (!user) return;
 
-    let query = supabase.from(table).select(select, { count: "exact" });
-
+    let query = supabase.from(table).select(select);
+    
     if (filterByTeacher) {
       query = query.eq("teacher_id", user.id);
     }
-
-    // Apply search filter if query exists
-    if (searchQuery) {
-      // Search across title/name fields
-      query = query.or(
-        `title.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%`,
-      );
-    }
-
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-
-    const {
-      data: result,
-      error,
-      count,
-    } = await query.order(orderBy, { ascending: false }).range(from, to);
+    
+    const { data: result, error } = await query.order(orderBy, { ascending: false });
 
     if (!error && result) {
       setData(result);
-      setTotalCount(count || 0);
     }
     setLoading(false);
   }
 
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return data;
+    
+    return data.filter(item => {
+      return searchFields.some(field => {
+        const value = field.includes(".") 
+          ? field.split(".").reduce((obj, key) => obj?.[key], item)
+          : item[field];
+        return String(value).toLowerCase().includes(searchQuery.toLowerCase());
+      });
+    });
+  }, [data, searchQuery, searchFields]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(start, start + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
+
   async function deleteItem(id: string) {
     const supabase = createClient();
     await supabase.from(table).delete().eq("id", id);
-    fetchData(); // Refetch to update count and pagination
+    setData(data.filter((item: any) => item.id !== id));
   }
 
   async function updateItem(id: string, updates: Partial<T>) {
     const supabase = createClient();
     await supabase.from(table).update(updates).eq("id", id);
-    setData(
-      data.map((item: any) =>
-        item.id === id ? { ...item, ...updates } : item,
-      ),
-    );
+    setData(data.map((item: any) => 
+      item.id === id ? { ...item, ...updates } : item
+    ));
   }
 
-  const totalPages = Math.ceil(totalCount / pageSize);
-
-  return {
-    data,
-    loading,
-    deleteItem,
-    updateItem,
+  return { 
+    data: paginatedData,
+    loading, 
+    deleteItem, 
+    updateItem, 
     refetch: fetchData,
+    searchQuery,
+    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,
-    searchQuery,
-    setSearchQuery,
-    totalCount,
+    totalItems: filteredData.length
   };
 }
