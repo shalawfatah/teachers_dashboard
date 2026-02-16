@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { ThemeSwitcher } from "./theme-switcher";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -13,8 +14,8 @@ export async function AuthButton() {
 
   return user ? (
     <div className="flex items-center justify-between gap-4">
-      سڵاو {user.email}!
       <LogoutButton />
+      <ThemeSwitcher />
     </div>
   ) : (
     <div className="flex gap-2">
