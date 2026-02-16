@@ -67,13 +67,13 @@ export default function ReklamTable() {
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
-              <tr>
-                <th className="px-4 py-3 text-left">ناونیشان</th>
-                <th className="px-4 py-3 text-left">جۆر</th>
-                <th className="px-4 py-3 text-left">ڕیز</th>
-                <th className="px-4 py-3 text-left">دۆخ</th>
-                <th className="px-4 py-3 text-left">بەروار</th>
-                <th className="px-4 py-3 text-right">دەستکاریی</th>
+              <tr className="text-right">
+                <th className="px-4 py-3">ناونیشان</th>
+                <th className="px-4 py-3">جۆر</th>
+                <th className="px-4 py-3">ڕیز</th>
+                <th className="px-4 py-3">دۆخ</th>
+                <th className="px-4 py-3">بەروار</th>
+                <th className="px-4 py-3 text-center">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
