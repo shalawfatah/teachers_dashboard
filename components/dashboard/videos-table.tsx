@@ -51,7 +51,7 @@ export function VideosTable() {
     setEditVideo(null);
   };
 
-  if (loading) return <div>Loading videos...</div>;
+  if (loading) return <div>دابەزاندنی داتای ڤیدیۆکان...</div>;
 
   return (
     <>

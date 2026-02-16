@@ -48,7 +48,7 @@ export function CoursesTable() {
     setEditCourse(null);
   };
 
-  if (loading) return <div>Loading courses...</div>;
+  if (loading) return <div>دابەزاندنی داتای خولەکان...</div>;
 
   return (
     <>

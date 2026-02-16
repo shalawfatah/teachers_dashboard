@@ -35,7 +35,7 @@ export function StudentsTable() {
   const [viewItem, setViewItem] = useState<Student | null>(null);
   const [deleteItem2, setDeleteItem2] = useState<Student | null>(null);
 
-  if (loading) return <div>Loading students...</div>;
+  if (loading) return <div>دابەزاندنی داتای خوێندکاران...</div>;
 
   return (
     <>
