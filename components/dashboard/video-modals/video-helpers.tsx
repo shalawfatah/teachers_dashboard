@@ -20,13 +20,12 @@ export async function uploadVideoToBunny(
 ): Promise<string> {
   const BUNNY_LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const BUNNY_API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
-  const BUNNY_CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME; // e.g., "vz-xxxxx.b-cdn.net"
 
   if (!BUNNY_LIBRARY_ID || !BUNNY_API_KEY) {
     throw new Error("Bunny.net credentials not configured");
   }
 
-  // Create a video in Bunny.net library
+  // Step 1: Create a video in Bunny.net library
   const createResponse = await fetch(
     `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
     {
@@ -42,13 +41,17 @@ export async function uploadVideoToBunny(
   );
 
   if (!createResponse.ok) {
+    const errorText = await createResponse.text();
+    console.error("Bunny.net create error:", errorText);
     throw new Error("Failed to create video in Bunny.net");
   }
 
   const createData = await createResponse.json();
   const videoId = createData.guid;
 
-  // Upload the video file
+  console.log("Created video with ID:", videoId);
+
+  // Step 2: Upload the video file
   const uploadResponse = await fetch(
     `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${videoId}`,
     {
@@ -61,30 +64,71 @@ export async function uploadVideoToBunny(
   );
 
   if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    console.error("Bunny.net upload error:", errorText);
     throw new Error("Failed to upload video to Bunny.net");
   }
 
-  // Return the direct HLS playlist URL (works with expo-video)
-  // If you have a CDN hostname configured, use it
-  if (BUNNY_CDN_HOSTNAME) {
-    return `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+  console.log("Video uploaded successfully");
+
+  // Step 3: Get the video details to get the correct video ID
+  // Sometimes Bunny.net assigns a different ID after processing
+  const detailsResponse = await fetch(
+    `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${videoId}`,
+    {
+      headers: {
+        AccessKey: BUNNY_API_KEY,
+      },
+    },
+  );
+
+  if (!detailsResponse.ok) {
+    console.error("Failed to fetch video details, using original ID");
+  } else {
+    const videoDetails = await detailsResponse.json();
+    console.log("Video details:", videoDetails);
+
+    // Use the video ID from details if available
+    if (videoDetails.guid) {
+      console.log("Using video ID from details:", videoDetails.guid);
+    }
   }
 
-  // Otherwise, use the default video delivery URL
-  return `https://vz-${BUNNY_LIBRARY_ID}.b-cdn.net/${videoId}/playlist.m3u8`;
+  // Step 4: Return the embed player URL (works with both iframe and expo-video)
+  // This is the safest URL format that always works
+  return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}`;
+}
+
+/**
+ * Convert Bunny.net URL to the format needed for expo-video
+ * Takes any Bunny URL and returns the iframe embed URL
+ */
+export function getBunnyEmbedUrl(videoIdOrUrl: string): string {
+  const BUNNY_LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
+
+  // If it's already a full URL, extract the video ID
+  if (videoIdOrUrl.includes("http")) {
+    const videoId = extractBunnyVideoId(videoIdOrUrl);
+    if (videoId) {
+      return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}`;
+    }
+  }
+
+  // Otherwise assume it's just the video ID
+  return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoIdOrUrl}`;
 }
 
 /**
  * Get video information from Bunny.net including all available URLs
  */
 export async function getBunnyVideoInfo(videoId: string): Promise<{
-  hlsUrl: string;
-  mp4Urls: Array<{ quality: string; url: string }>;
+  embedUrl: string;
+  videoId: string;
+  title: string;
   thumbnailUrl: string;
 }> {
   const BUNNY_LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const BUNNY_API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
-  const BUNNY_CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
 
   if (!BUNNY_LIBRARY_ID || !BUNNY_API_KEY) {
     throw new Error("Bunny.net credentials not configured");
@@ -104,19 +148,14 @@ export async function getBunnyVideoInfo(videoId: string): Promise<{
   }
 
   const data = await response.json();
-  const baseUrl = BUNNY_CDN_HOSTNAME
-    ? `https://${BUNNY_CDN_HOSTNAME}/${videoId}`
-    : `https://vz-${BUNNY_LIBRARY_ID}.b-cdn.net/${videoId}`;
 
   return {
-    hlsUrl: `${baseUrl}/playlist.m3u8`,
-    mp4Urls: [
-      { quality: "360p", url: `${baseUrl}/play_360p.mp4` },
-      { quality: "480p", url: `${baseUrl}/play_480p.mp4` },
-      { quality: "720p", url: `${baseUrl}/play_720p.mp4` },
-      { quality: "1080p", url: `${baseUrl}/play_1080p.mp4` },
-    ],
-    thumbnailUrl: `${baseUrl}/thumbnail.jpg`,
+    embedUrl: `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${data.guid}`,
+    videoId: data.guid,
+    title: data.title,
+    thumbnailUrl: data.thumbnailFileName
+      ? `https://vz-${BUNNY_LIBRARY_ID}.b-cdn.net/${data.guid}/${data.thumbnailFileName}`
+      : `https://vz-${BUNNY_LIBRARY_ID}.b-cdn.net/${data.guid}/thumbnail.jpg`,
   };
 }
 
@@ -128,6 +167,12 @@ export function extractBunnyVideoId(url: string): string | null {
   const iframeMatch = url.match(/embed\/\d+\/([a-f0-9-]+)/i);
   if (iframeMatch) return iframeMatch[1];
 
+  // Match player URL: https://player.mediadelivery.net/embed/LIBRARY_ID/VIDEO_ID
+  const playerMatch = url.match(
+    /player\.mediadelivery\.net\/embed\/\d+\/([a-f0-9-]+)/i,
+  );
+  if (playerMatch) return playerMatch[1];
+
   // Match direct URL: https://vz-xxxxx.b-cdn.net/VIDEO_ID/playlist.m3u8
   const directMatch = url.match(/b-cdn\.net\/([a-f0-9-]+)/i);
   if (directMatch) return directMatch[1];
@@ -136,24 +181,16 @@ export function extractBunnyVideoId(url: string): string | null {
 }
 
 /**
- * Convert iframe URL to direct video URL
+ * Convert any Bunny URL to iframe embed URL
  */
-export async function convertIframeToDirectUrl(
-  iframeUrl: string,
-): Promise<string> {
-  const videoId = extractBunnyVideoId(iframeUrl);
+export function convertToEmbedUrl(url: string): string {
+  const videoId = extractBunnyVideoId(url);
   if (!videoId) {
     throw new Error("Invalid Bunny.net URL");
   }
 
   const BUNNY_LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
-  const BUNNY_CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
-
-  if (BUNNY_CDN_HOSTNAME) {
-    return `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
-  }
-
-  return `https://vz-${BUNNY_LIBRARY_ID}.b-cdn.net/${videoId}/playlist.m3u8`;
+  return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}`;
 }
 
 export async function getTeacherCourses(): Promise<
