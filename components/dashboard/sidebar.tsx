@@ -1,8 +1,8 @@
 "use client";
 
-import { BookOpen, Video, Users } from "lucide-react";
+import { BookOpen, Video, Users, SwatchBook } from "lucide-react";
 
-type View = "courses" | "videos" | "students";
+type View = "courses" | "videos" | "students" | "reklam";
 
 interface SidebarProps {
   activeView: View;
@@ -13,6 +13,7 @@ const navItems = [
   { id: "courses" as View, label: "خولەکان", icon: BookOpen },
   { id: "videos" as View, label: "ڤیدیۆکان", icon: Video },
   { id: "students" as View, label: "خوێندکاران", icon: Users },
+  { id: "reklam" as View, label: "ریکلام", icon: SwatchBook },
 ];
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
