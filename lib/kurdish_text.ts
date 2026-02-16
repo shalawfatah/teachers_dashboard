@@ -1,0 +1,18 @@
+export const kurdish_text = {
+  view_profile: "بینینی پرۆفایل",
+  edit_profile: "نوێکردنەوەی پرۆفایل",
+  edit_profile_desk: "زانیارییەکانت نوێبکەرەوە",
+  name: "ناو",
+  expertise: "پسپۆڕیی",
+  profile_picture: "وێنەی پرۆفایل",
+  choose_profile_pic: "وێنەی پرۆفایل هەڵبژێرە",
+  max_prof_pic_size: "قەبارەی وێنە دەبێت کەمتر بێت لە ٥ مێگابایت",
+  cover_picture: "وێنەی کەڤەر",
+  choose_cover_pic: "وێنەی کەڤەر هەڵبژێرە",
+  max_cover_pic_size: "قەبارەی وێنەی کەڤەر دەبێت کەمتر بێت لە ٥ مێگابایت",
+  save_changes: "پاراستنی گۆڕانکارییەکان",
+  cancel: "رەتکردنەوە",
+  loading_save: "چاوەڕێ بە...",
+  error_file_size: "قەبارەی وێنە زۆر گەورەیە",
+  error_update: "هەڵەیەک ڕوویدا لە کاتی نوێکردنەوە",
+};

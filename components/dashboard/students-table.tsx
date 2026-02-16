@@ -53,7 +53,7 @@ export function StudentsTable() {
                 <th className="px-4 py-3">ئیمەیل</th>
                 <th className="px-4 py-3">پارەی واسڵکردووە</th>
                 <th className="px-4 py-3">بەروار</th>
-                <th className="px-4 py-3">دەستکاریی</th>
+                <th className="px-4 py-3 text-center">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>

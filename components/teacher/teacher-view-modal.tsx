@@ -135,7 +135,7 @@ export function TeacherViewModal({
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    البريد الإلكتروني
+                    ئیمەیل
                   </p>
                   <p className="font-medium">{teacher.email}</p>
                 </div>
@@ -158,7 +158,7 @@ export function TeacherViewModal({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">الخبرة</p>
+                  <p className="text-sm text-muted-foreground">پسپۆڕیی</p>
                   <p className="font-medium">{teacher.expertise}</p>
                 </div>
               </div>

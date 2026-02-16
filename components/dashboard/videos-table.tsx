@@ -69,10 +69,9 @@ export function VideosTable() {
               <tr className="text-right">
                 <th className="px-4 py-3">ناونیشان</th>
                 <th className="px-4 py-3">خول</th>
-                <th className="px-4 py-3">لینک</th>
                 <th className="px-4 py-3">خۆڕایی</th>
                 <th className="px-4 py-3">بەروار</th>
-                <th className="px-4 py-3">دەستکاریی</th>
+                <th className="px-4 py-3 text-center">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +79,6 @@ export function VideosTable() {
                 <tr key={video.id} className="border-b last:border-0">
                   <td className="px-4 py-3">{video.title}</td>
                   <td className="px-4 py-3">{video.courses?.title}</td>
-                  <td className="px-4 py-3 max-w-xs truncate">{video.link}</td>
                   <td className="px-4 py-3">
                     {video.free ? (
                       <span className="text-green-600">بەڵێ</span>

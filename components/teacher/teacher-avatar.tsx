@@ -5,6 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { TeacherViewModal } from "./teacher-view-modal";
 import { TeacherEditModal } from "./teacher-edit-modal";
 import { createClient } from "@/lib/supabase/client";
+import { kurdish_text } from "@/lib/kurdish_text";
 
 interface Teacher {
   id: string;
@@ -128,7 +129,7 @@ export function TeacherAvatar() {
                 }}
                 className="w-full px-4 py-2 text-right text-sm hover:bg-foreground/5 transition-colors flex items-center justify-end gap-2"
               >
-                <span>عرض الملف الشخصي</span>
+                <span>{kurdish_text.view_profile}</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"
@@ -150,7 +151,7 @@ export function TeacherAvatar() {
                 }}
                 className="w-full px-4 py-2 text-right text-sm hover:bg-foreground/5 transition-colors flex items-center justify-end gap-2"
               >
-                <span>تعديل الملف الشخصي</span>
+                <span>{kurdish_text.edit_profile}</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"

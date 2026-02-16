@@ -1,5 +1,6 @@
 "use client";
 
+import { kurdish_text } from "@/lib/kurdish_text";
 import { createClient } from "@/lib/supabase/client";
 import { useState, useEffect, useRef } from "react";
 
@@ -50,7 +51,6 @@ export function TeacherEditModal({
     } else {
       document.body.style.overflow = "unset";
     }
-
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -60,7 +60,7 @@ export function TeacherEditModal({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError("حجم الصورة يجب أن يكون أقل من 5 ميغابايت");
+        setError(kurdish_text.error_file_size);
         return;
       }
       setThumbnailFile(file);
@@ -77,7 +77,7 @@ export function TeacherEditModal({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError("حجم الصورة يجب أن يكون أقل من 5 ميغابايت");
+        setError(kurdish_text.error_file_size);
         return;
       }
       setCoverFile(file);
@@ -99,72 +99,47 @@ export function TeacherEditModal({
       let thumbnailPath = teacher.thumbnail;
       let coverPath = teacher.cover_img;
 
-      // Upload thumbnail if selected
+      // Thumbnail Upload Logic
       if (thumbnailFile) {
         const fileExt =
           thumbnailFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const fileName = `${teacher.id}_thumbnail_${Date.now()}.${fileExt}`;
         const filePath = `thumbnails/${fileName}`;
-
-        // Delete old thumbnail if exists
         if (teacher.thumbnail) {
-          // Extract the path from the full URL to delete
           const oldPath = teacher.thumbnail.split("/teacher-images/")[1];
-          if (oldPath) {
+          if (oldPath)
             await supabase.storage.from("teacher-images").remove([oldPath]);
-          }
         }
-
         const { error: uploadError } = await supabase.storage
           .from("teacher-images")
-          .upload(filePath, thumbnailFile, {
-            contentType: `image/${fileExt === "jpg" ? "jpeg" : fileExt}`,
-            upsert: false,
-          });
-
+          .upload(filePath, thumbnailFile);
         if (uploadError) throw uploadError;
-
-        // Get the public URL
         const {
           data: { publicUrl },
         } = supabase.storage.from("teacher-images").getPublicUrl(filePath);
-
-        thumbnailPath = publicUrl; // Save full URL
+        thumbnailPath = publicUrl;
       }
 
-      // Upload cover if selected
+      // Cover Upload Logic
       if (coverFile) {
         const fileExt = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const fileName = `${teacher.id}_cover_${Date.now()}.${fileExt}`;
         const filePath = `covers/${fileName}`;
-
-        // Delete old cover if exists
         if (teacher.cover_img) {
-          // Extract the path from the full URL to delete
           const oldPath = teacher.cover_img.split("/teacher-images/")[1];
-          if (oldPath) {
+          if (oldPath)
             await supabase.storage.from("teacher-images").remove([oldPath]);
-          }
         }
-
         const { error: uploadError } = await supabase.storage
           .from("teacher-images")
-          .upload(filePath, coverFile, {
-            contentType: `image/${fileExt === "jpg" ? "jpeg" : fileExt}`,
-            upsert: false,
-          });
-
+          .upload(filePath, coverFile);
         if (uploadError) throw uploadError;
-
-        // Get the public URL
         const {
           data: { publicUrl },
         } = supabase.storage.from("teacher-images").getPublicUrl(filePath);
-
-        coverPath = publicUrl; // Save full URL
+        coverPath = publicUrl;
       }
 
-      // Update teacher record
       const { error: updateError } = await supabase
         .from("teachers")
         .update({
@@ -176,12 +151,10 @@ export function TeacherEditModal({
         .eq("id", teacher.id);
 
       if (updateError) throw updateError;
-
       onUpdate();
       onClose();
     } catch (err) {
-      console.error("Error updating teacher:", err);
-      setError("حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.");
+      setError(kurdish_text.error_update);
     } finally {
       setIsLoading(false);
     }
@@ -189,49 +162,23 @@ export function TeacherEditModal({
 
   if (!isOpen) return null;
 
-  // thumbnail and cover_img now store full URLs, use them directly
-  const currentThumbnailUrl = teacher.thumbnail || null;
-  const currentCoverUrl = teacher.cover_img || null;
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl bg-background rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="relative w-full max-w-2xl bg-background rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          disabled={isLoading}
-          className="absolute top-4 left-4 z-10 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors flex items-center justify-center group disabled:opacity-50"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-
         {/* Header */}
         <div className="p-6 border-b border-foreground/10">
-          <h2 className="text-2xl font-bold">تعديل الملف الشخصي</h2>
+          <h2 className="text-2xl font-bold">{kurdish_text.edit_profile}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            قم بتحديث معلوماتك وصورك الشخصية
+            {kurdish_text.edit_profile_desk}
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
@@ -239,66 +186,53 @@ export function TeacherEditModal({
             </div>
           )}
 
-          {/* Name */}
+          {/* Name & Expertise */}
           <div>
-            <label className="block text-sm font-medium mb-2">الاسم</label>
+            <label className="block text-sm font-medium mb-2">
+              {kurdish_text.name}
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/20 transition-all"
+              className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-lg"
             />
           </div>
-
-          {/* Expertise */}
           <div>
-            <label className="block text-sm font-medium mb-2">الخبرة</label>
+            <label className="block text-sm font-medium mb-2">
+              {kurdish_text.expertise}
+            </label>
             <input
               type="text"
               value={expertise}
               onChange={(e) => setExpertise(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/20 transition-all"
+              className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-lg"
             />
           </div>
 
-          {/* Thumbnail */}
+          {/* Profile Picture */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              الصورة الشخصية
+              {kurdish_text.profile_picture}
             </label>
             <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-                {thumbnailPreview ? (
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-muted">
+                {(thumbnailPreview || teacher.thumbnail) && (
                   <img
-                    src={thumbnailPreview}
-                    alt="Preview"
+                    src={thumbnailPreview || teacher.thumbnail}
                     className="w-full h-full object-cover"
+                    alt=""
                   />
-                ) : currentThumbnailUrl ? (
-                  <img
-                    src={currentThumbnailUrl}
-                    alt="Current"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl">
-                    {teacher.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
-                  </div>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => thumbnailInputRef.current?.click()}
-                className="px-4 py-2 bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-foreground/5 rounded-lg text-sm"
               >
-                اختر صورة جديدة
+                {kurdish_text.choose_profile_pic}
               </button>
               <input
                 ref={thumbnailInputRef}
@@ -309,50 +243,40 @@ export function TeacherEditModal({
               />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              الحد الأقصى: 5 ميغابايت
+              {kurdish_text.max_prof_pic_size}
             </p>
           </div>
 
-          {/* Cover */}
+          {/* Cover Picture */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              صورة الغلاف
+              {kurdish_text.cover_picture}
             </label>
-            <div className="space-y-3">
-              <div className="w-full h-40 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-                {coverPreview ? (
-                  <img
-                    src={coverPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : currentCoverUrl ? (
-                  <img
-                    src={currentCoverUrl}
-                    alt="Current"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500" />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => coverInputRef.current?.click()}
-                className="px-4 py-2 bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors text-sm font-medium"
-              >
-                اختر صورة غلاف جديدة
-              </button>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverChange}
-                className="hidden"
-              />
+            <div className="w-full h-40 rounded-lg overflow-hidden bg-muted mb-3">
+              {(coverPreview || teacher.cover_img) && (
+                <img
+                  src={coverPreview || teacher.cover_img}
+                  className="w-full h-full object-cover"
+                  alt=""
+                />
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              className="px-4 py-2 bg-foreground/5 rounded-lg text-sm"
+            >
+              {kurdish_text.choose_cover_pic}
+            </button>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverChange}
+              className="hidden"
+            />
             <p className="text-xs text-muted-foreground mt-2">
-              الحد الأقصى: 5 ميغابايت
+              {kurdish_text.max_cover_pic_size}
             </p>
           </div>
 
@@ -361,17 +285,19 @@ export function TeacherEditModal({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-6 py-3 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-foreground text-background rounded-lg font-medium disabled:opacity-50"
             >
-              {isLoading ? "جاري الحفظ..." : "حفظ التغييرات"}
+              {isLoading
+                ? kurdish_text.loading_save
+                : kurdish_text.save_changes}
             </button>
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-6 py-3 bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors font-medium disabled:opacity-50"
+              className="px-6 py-3 bg-foreground/5 rounded-lg font-medium"
             >
-              إلغاء
+              {kurdish_text.cancel}
             </button>
           </div>
         </form>

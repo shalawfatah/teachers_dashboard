@@ -69,7 +69,7 @@ export function CoursesTable() {
                 <th className="px-4 py-3">پۆل</th>
                 <th className="px-4 py-3">بابەت</th>
                 <th className="px-4 py-3">بەروار</th>
-                <th className="px-4 py-3">دەستکاریی</th>
+                <th className="px-4 py-3 text-center">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
