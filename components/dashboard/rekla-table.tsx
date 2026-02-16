@@ -52,7 +52,7 @@ export default function ReklamTable() {
     setEditReklam(null);
   };
 
-  if (loading) return <div>Loading reklams...</div>;
+  if (loading) return <div>دابەزاندنی داتای ریکلام...</div>;
 
   return (
     <>
