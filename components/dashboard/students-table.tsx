@@ -44,8 +44,6 @@ export function StudentsTable() {
           title="خوێندکاران"
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          onAdd={() => console.log("زیادکردنی خوێندکار")}
-          addButtonText="زیادکردنی خوێندکار"
         />
         <div className="border rounded-lg">
           <table className="w-full">
