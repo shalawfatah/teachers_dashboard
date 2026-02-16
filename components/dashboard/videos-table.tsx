@@ -66,13 +66,13 @@ export function VideosTable() {
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
-              <tr>
-                <th className="px-4 py-3 text-left">ناونیشان</th>
-                <th className="px-4 py-3 text-left">خول</th>
-                <th className="px-4 py-3 text-left">لینک</th>
-                <th className="px-4 py-3 text-left">خۆڕایی</th>
-                <th className="px-4 py-3 text-left">بەروار</th>
-                <th className="px-4 py-3 text-right">دەستکاریی</th>
+              <tr className="text-right">
+                <th className="px-4 py-3">ناونیشان</th>
+                <th className="px-4 py-3">خول</th>
+                <th className="px-4 py-3">لینک</th>
+                <th className="px-4 py-3">خۆڕایی</th>
+                <th className="px-4 py-3">بەروار</th>
+                <th className="px-4 py-3">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>

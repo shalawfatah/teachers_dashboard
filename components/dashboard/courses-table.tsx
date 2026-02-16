@@ -63,13 +63,13 @@ export function CoursesTable() {
         <div className="border rounded-lg">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
-              <tr>
-                <th className="px-4 py-3 text-left">ناونیشان</th>
-                <th className="px-4 py-3 text-left">درێژە</th>
-                <th className="px-4 py-3 text-left">پۆل</th>
-                <th className="px-4 py-3 text-left">بابەت</th>
-                <th className="px-4 py-3 text-left">بەروار</th>
-                <th className="px-4 py-3 text-right">دەستکاریی</th>
+              <tr className="text-right">
+                <th className="px-4 py-3">ناونیشان</th>
+                <th className="px-4 py-3">درێژە</th>
+                <th className="px-4 py-3">پۆل</th>
+                <th className="px-4 py-3">بابەت</th>
+                <th className="px-4 py-3">بەروار</th>
+                <th className="px-4 py-3">دەستکاریی</th>
               </tr>
             </thead>
             <tbody>
