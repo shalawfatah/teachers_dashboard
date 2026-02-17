@@ -14,7 +14,7 @@ interface Reklam {
   description: string;
   image_url: string;
   video_url: string;
-  video_bunny_id: string;
+  video_hls_url: string; // full HLS URL stored directly
   link_type: LinkType;
   link_target: string;
   display_order: number;
@@ -41,14 +41,18 @@ async function uploadReklamImage(file: File): Promise<string> {
     .publicUrl;
 }
 
-// ─── Video upload (Bunny.net) ─────────────────────────────────────────────────
+// ─── Video upload (Bunny.net) → returns full HLS URL ─────────────────────────
+// Same pattern as your working videos table. Stored as:
+// https://vz-600296.b-cdn.net/{guid}/playlist.m3u8
+// expo-video plays this directly — no iframe, no conversion needed.
 
 async function uploadVideoToBunny(
   file: File,
   onProgress: (p: number) => void,
-): Promise<{ videoId: string; embedUrl: string }> {
+): Promise<string> {
   const LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
+  const CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
   if (!LIBRARY_ID || !API_KEY) throw new Error("Bunny credentials missing");
 
   // Step 1 — create video entry
@@ -74,10 +78,11 @@ async function uploadVideoToBunny(
 
   onProgress(100);
 
-  return {
-    videoId,
-    embedUrl: `https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${videoId}`,
-  };
+  // Return full HLS URL — works directly with expo-video
+  if (CDN_HOSTNAME) {
+    return `https://${CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+  }
+  return `https://vz-${LIBRARY_ID}.b-cdn.net/${videoId}/playlist.m3u8`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -127,7 +132,7 @@ export function ReklamForm({
       setDisplayOrder(editReklam.display_order);
       setIsActive(editReklam.is_active);
       setExistingImageUrl(editReklam.image_url || "");
-      setExistingBunnyId(editReklam.video_bunny_id || "");
+      setExistingBunnyId(editReklam.video_hls_url || ""); // already a full HLS URL
       setImagePreview(editReklam.image_url || "");
     }
     fetchDropdowns();
@@ -214,23 +219,17 @@ export function ReklamForm({
       if (!user) throw new Error("Not authenticated");
 
       let imageUrl = existingImageUrl;
-      let bunnyVideoId = existingBunnyId;
-      let embedUrl = existingBunnyId
-        ? `https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${existingBunnyId}`
-        : "";
+      let hlsUrl = existingBunnyId; // existingBunnyId already holds the full HLS URL when editing
 
       // Upload new image
       if (imageFile) {
         imageUrl = await uploadReklamImage(imageFile);
-        bunnyVideoId = "";
-        embedUrl = "";
+        hlsUrl = "";
       }
 
-      // Upload new video
+      // Upload new video → returns full HLS URL directly
       if (videoFile) {
-        const result = await uploadVideoToBunny(videoFile, setVideoProgress);
-        bunnyVideoId = result.videoId;
-        embedUrl = result.embedUrl;
+        hlsUrl = await uploadVideoToBunny(videoFile, setVideoProgress);
         imageUrl = "";
       }
 
@@ -238,8 +237,8 @@ export function ReklamForm({
         title,
         description,
         image_url: imageUrl || null,
-        video_url: embedUrl || null,
-        video_bunny_id: bunnyVideoId || null,
+        video_url: null, // no longer storing iframe URLs
+        video_hls_url: hlsUrl || null,
         link_type: linkType,
         link_target: linkTarget || null,
         display_order: displayOrder,
@@ -350,7 +349,7 @@ export function ReklamForm({
                 <span className="text-xs font-medium truncate max-w-full">
                   {videoFile
                     ? videoFile.name
-                    : `Bunny: ${existingBunnyId.slice(0, 8)}...`}
+                    : `HLS: ...${existingBunnyId.slice(-12)}`}
                 </span>
                 {videoProgress > 0 && videoProgress < 100 && (
                   <div className="w-full mt-2">
