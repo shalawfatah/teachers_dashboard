@@ -5,9 +5,10 @@ import { Sidebar } from "./sidebar";
 import { CoursesTable } from "./courses-table";
 import { VideosTable } from "./videos-table";
 import { StudentsTable } from "./students-table";
-import ReklamTable from "./rekla-table";
+import ReklamTable from "./reklam-table";
+import DocumentsTable from "./documents-table";
 
-type View = "courses" | "videos" | "students" | "reklam";
+type View = "courses" | "videos" | "students" | "reklam" | "documents";
 
 export function DashboardLayout() {
   const [activeView, setActiveView] = useState<View>("courses");
@@ -20,6 +21,7 @@ export function DashboardLayout() {
         {activeView === "videos" && <VideosTable />}
         {activeView === "students" && <StudentsTable />}
         {activeView === "reklam" && <ReklamTable />}
+        {activeView === "documents" && <DocumentsTable />}
       </main>
     </div>
   );

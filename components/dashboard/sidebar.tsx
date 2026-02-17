@@ -2,7 +2,7 @@
 
 import { BookOpen, Video, Users, SwatchBook } from "lucide-react";
 
-type View = "courses" | "videos" | "students" | "reklam";
+type View = "courses" | "videos" | "students" | "reklam" | "documents";
 
 interface SidebarProps {
   activeView: View;
@@ -14,6 +14,7 @@ const navItems = [
   { id: "videos" as View, label: "ڤیدیۆکان", icon: Video },
   { id: "students" as View, label: "خوێندکاران", icon: Users },
   { id: "reklam" as View, label: "ریکلام", icon: SwatchBook },
+  { id: "documents" as View, label: "مەلزەمە", icon: BookOpen },
 ];
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
