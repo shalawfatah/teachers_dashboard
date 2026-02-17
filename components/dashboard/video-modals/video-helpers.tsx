@@ -14,10 +14,7 @@ export async function uploadVideoThumbnail(file: File): Promise<string | null> {
   return publicUrl;
 }
 
-export async function uploadVideoToBunny(
-  file: File,
-  onProgress?: (progress: number) => void,
-): Promise<string> {
+export async function uploadVideoToBunny(file: File): Promise<string> {
   const BUNNY_LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const BUNNY_API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
 

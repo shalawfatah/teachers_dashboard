@@ -6,15 +6,10 @@ import { TeacherViewModal } from "./teacher-view-modal";
 import { TeacherEditModal } from "./teacher-edit-modal";
 import { createClient } from "@/lib/supabase/client";
 import { kurdish_text } from "@/lib/kurdish_text";
+import Image from "next/image";
+import { Teacher } from "@/types/teacher";
 
-interface Teacher {
-  id: string;
-  name: string;
-  expertise: string;
-  email: string;
-  thumbnail: string;
-  cover_img: string;
-}
+const supabase = createClient();
 
 export function TeacherAvatar() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,7 +18,6 @@ export function TeacherAvatar() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchTeacher() {
@@ -101,8 +95,10 @@ export function TeacherAvatar() {
           className="group relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-foreground/10 hover:ring-foreground/30 transition-all duration-300 focus:outline-none focus:ring-foreground/50"
         >
           {avatarUrl ? (
-            <img
+            <Image
               src={avatarUrl}
+              height={100}
+              width={100}
               alt={teacher.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
             />

@@ -3,13 +3,17 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-interface ViewModalProps {
+interface ViewModalProps<T extends Record<string, unknown>> {
   title: string;
-  data: Record<string, any>;
+  data: T;
   onClose: () => void;
 }
 
-export function ViewModal({ title, data, onClose }: ViewModalProps) {
+export function ViewModal<T extends Record<string, unknown>>({
+  title,
+  data,
+  onClose,
+}: ViewModalProps<T>) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();

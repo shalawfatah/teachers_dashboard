@@ -11,7 +11,6 @@ interface TableActionsProps {
 export function TableActions({
   onView,
   onDelete,
-  hideEdit,
 }: TableActionsProps) {
   return (
     <div className="flex justify-end gap-2">

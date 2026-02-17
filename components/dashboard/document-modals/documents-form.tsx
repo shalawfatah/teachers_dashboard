@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FileUp, X, File } from "lucide-react";
 import type { Document } from "../documents-table";
@@ -26,15 +26,8 @@ export function DocumentForm({
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  useEffect(() => {
-    if (editDocument) {
-      setTitle(editDocument.title);
-      setCourseId(editDocument.course_id || "");
-    }
-    fetchCourses();
-  }, [editDocument]);
-
-  const fetchCourses = async () => {
+  // FIX: fetchCourses wrapped in useCallback to prevent unnecessary re-renders
+  const fetchCourses = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -45,16 +38,26 @@ export function DocumentForm({
       .eq("teacher_id", user.id)
       .order("title");
     setCourses(data || []);
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (editDocument) {
+      setTitle(editDocument.title);
+      setCourseId(editDocument.course_id || "");
+    }
+    fetchCourses();
+  }, [editDocument, fetchCourses]); // fetchCourses is now a stable dependency
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setFile(e.target.files[0]);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) setFile(selectedFile);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    if (e.dataTransfer.files?.[0]) setFile(e.dataTransfer.files[0]);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) setFile(droppedFile);
   };
 
   const formatSize = (bytes: number) => {
@@ -83,9 +86,7 @@ export function DocumentForm({
         }
         : null;
 
-      // Upload new file if provided
       if (file) {
-        // Delete old file if editing
         if (editDocument?.file_path) {
           await supabase.storage
             .from("documents")
@@ -140,7 +141,6 @@ export function DocumentForm({
       setUploading(false);
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Title */}

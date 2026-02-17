@@ -8,6 +8,7 @@ import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { ReklamModal } from "./reklam-modals/reklam-modal";
 import { Eye, Trash2, Edit, ImageIcon, VideoIcon } from "lucide-react";
+import Image from "next/image";
 
 interface Reklam {
   id: string;
@@ -116,8 +117,10 @@ export default function ReklamTable() {
                         </div>
                       ) : r.image_url ? (
                         <div className="flex items-center gap-1.5">
-                          <img
+                          <Image
                             src={r.image_url}
+                            height={100}
+                            width={100}
                             alt=""
                             className="w-10 h-7 object-cover rounded"
                           />

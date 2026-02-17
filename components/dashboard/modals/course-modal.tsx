@@ -1,33 +1,10 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { uploadThumbnail, saveCourse } from "./course-helpers";
-
-interface CourseModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  editCourse?: {
-    id: string;
-    title: string;
-    description: string;
-    grade: string;
-    subject: string;
-    thumbnail?: string;
-  } | null;
-}
-
-const GRADES = [7,8,9,10,11,12];
-const SUBJECTS = [
-  "math",
-  "science",
-  "english",
-  "history",
-  "art",
-  "music",
-  "other",
-];
+import Image from "next/image";
+import { CourseModalProps } from "@/types/course";
+import { GRADES, SUBJECTS } from "@/lib/info";
 
 export function CourseModal({
   isOpen,
@@ -83,8 +60,12 @@ export function CourseModal({
       await saveCourse(formData, thumbnailUrl, editCourse?.id);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to save course");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to save course");
+      }
     } finally {
       setLoading(false);
     }
@@ -122,9 +103,7 @@ export function CourseModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">
-              درێژە *
-            </label>
+            <label className="block text-sm font-medium mb-2">درێژە *</label>
             <textarea
               value={formData.description}
               onChange={(e) =>
@@ -184,7 +163,9 @@ export function CourseModal({
               className="w-full px-3 py-2 border rounded-lg bg-background"
             />
             {thumbnailPreview && (
-              <img
+              <Image
+                width={100}
+                height={100}
                 src={thumbnailPreview}
                 alt="Preview"
                 className="mt-2 h-32 object-cover rounded-lg"
@@ -205,7 +186,11 @@ export function CourseModal({
               disabled={loading}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "تۆمارکردن..." : editCourse ? "نوێکردنەوە" : "تۆماربکە"}
+              {loading
+                ? "تۆمارکردن..."
+                : editCourse
+                  ? "نوێکردنەوە"
+                  : "تۆماربکە"}
             </button>
           </div>
         </form>

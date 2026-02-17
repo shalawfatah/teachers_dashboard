@@ -8,7 +8,7 @@ import {
   getTeacherCourses,
   saveVideo,
 } from "./video-helpers";
-
+import Image from "next/image";
 interface VideoModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -93,8 +93,12 @@ export function VideoModal({
       setProgress(100);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to save video");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to save video");
+      }
     } finally {
       setLoading(false);
       setProgress(0);
@@ -207,8 +211,10 @@ export function VideoModal({
               className="w-full px-3 py-2 border rounded-lg bg-background"
             />
             {thumbnailPreview && (
-              <img
+              <Image
                 src={thumbnailPreview}
+                height={100}
+                width={100}
                 alt="Preview"
                 className="mt-2 h-32 object-cover rounded-lg"
               />

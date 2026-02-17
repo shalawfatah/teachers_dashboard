@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/client";
 
+const supabase = createClient();
+
 export async function uploadThumbnail(file: File): Promise<string | null> {
-  const supabase = createClient();
   const fileExt = file.name.split(".").pop();
   const filePath = `${Math.random()}.${fileExt}`;
 

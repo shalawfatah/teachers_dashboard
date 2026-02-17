@@ -31,7 +31,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ku" dir="rtl" suppressHydrationWarning>
-      <body className={`${goranFont.className} antialiased`}>
+      <body
+        className={`${goranFont.className} ${nrtFont.variable} ${goranFont.variable} antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -5,6 +5,7 @@ export interface Reklam {
   image_url: string;
   video_url: string;
   link_type: string;
+  video_hls_url: string;
   link_target: string;
   display_order: number;
   is_active: boolean;

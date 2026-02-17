@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 
 interface Teacher {
   id: string;
@@ -79,8 +80,10 @@ export function TeacherViewModal({
         {/* Cover image */}
         <div className="relative h-48 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
           {coverUrl ? (
-            <img
+            <Image
               src={coverUrl}
+              height={100}
+              width={100}
               alt="Cover"
               className="w-full h-full object-cover"
             />
@@ -96,8 +99,10 @@ export function TeacherViewModal({
           <div className="absolute -top-16 right-8">
             <div className="w-32 h-32 rounded-full ring-4 ring-background overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
               {thumbnailUrl ? (
-                <img
+                <Image
                   src={thumbnailUrl}
+                  height={100}
+                  width={100}
                   alt={teacher.name}
                   className="w-full h-full object-cover"
                 />
@@ -134,9 +139,7 @@ export function TeacherViewModal({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    ئیمەیل
-                  </p>
+                  <p className="text-sm text-muted-foreground">ئیمەیل</p>
                   <p className="font-medium">{teacher.email}</p>
                 </div>
               </div>
