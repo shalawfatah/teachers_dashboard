@@ -9,6 +9,7 @@ import {
   saveVideo,
 } from "./video-helpers";
 import Image from "next/image";
+
 interface VideoModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,6 +18,7 @@ interface VideoModalProps {
     id: string;
     title: string;
     link: string;
+    video_hls_url?: string; // Add this to the interface
     course_id: string;
     free: boolean;
     thumbnail?: string;
@@ -70,33 +72,47 @@ export function VideoModal({
     setError("");
     setLoading(true);
     setProgress(0);
+
     try {
-      let videoLink = editVideo?.link || "";
+      // 1. Handle Video Upload
+      let videoData: any = editVideo
+        ? {
+          iframeUrl: editVideo.link,
+          hlsUrl: editVideo.video_hls_url,
+        }
+        : null;
+
       if (videoFile && !editVideo) {
-        setProgress(25);
-        videoLink = await uploadVideoToBunny(videoFile);
-        setProgress(75);
+        // We pass setProgress as a callback so the bar updates during upload
+        videoData = await uploadVideoToBunny(videoFile, (p) => setProgress(p));
       }
+
+      // 2. Handle Thumbnail Upload
       let thumbnailUrl = editVideo?.thumbnail || "";
       if (thumbnailFile) {
         const url = await uploadVideoThumbnail(thumbnailFile);
         if (url) thumbnailUrl = url;
       }
-      setProgress(90);
+
+      // 3. Save to Supabase
+      // We use the 'link' property to pass the videoData object
+      // Our updated 'saveVideo' helper will extract iframeUrl and hlsUrl from it.
+      setProgress(95);
       await saveVideo(
-        { ...formData, link: videoLink },
+        {
+          ...formData,
+          link: videoData, // This is now { iframeUrl, hlsUrl, videoId } or the existing link
+        },
         thumbnailUrl,
         editVideo?.id,
       );
+
       setProgress(100);
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to save video");
-      }
+      console.error("Submit Error:", err);
+      setError(err instanceof Error ? err.message : "Failed to save video");
     } finally {
       setLoading(false);
       setProgress(0);
@@ -126,6 +142,8 @@ export function VideoModal({
               {error}
             </div>
           )}
+
+          {/* ... [Video File Input Section - remains the same] ... */}
           {!editVideo && (
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -162,6 +180,8 @@ export function VideoModal({
               </div>
             </div>
           )}
+
+          {/* ... [Title and Course Select Section - remains the same] ... */}
           <div>
             <label className="block text-sm font-medium mb-2">Title *</label>
             <input
@@ -171,9 +191,10 @@ export function VideoModal({
                 setFormData({ ...formData, title: e.target.value })
               }
               required
-              className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border rounded-lg bg-background"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-2">Course *</label>
             <select
@@ -182,7 +203,7 @@ export function VideoModal({
                 setFormData({ ...formData, course_id: e.target.value })
               }
               required
-              className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border rounded-lg bg-background"
             >
               <option value="">Select course</option>
               {courses.map((c) => (
@@ -192,6 +213,7 @@ export function VideoModal({
               ))}
             </select>
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-2">Thumbnail</label>
             <input
@@ -218,6 +240,7 @@ export function VideoModal({
               />
             )}
           </div>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -232,35 +255,39 @@ export function VideoModal({
               Free video
             </label>
           </div>
-          {loading && progress > 0 && (
+
+          {loading && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Uploading...</span>
+                <span>
+                  {progress < 90 ? "Uploading Video..." : "Saving Details..."}
+                </span>
                 <span>{progress}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div
-                  className="bg-primary h-2 rounded-full transition-all"
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
           )}
+
           <div className="flex gap-3 justify-end pt-4">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-lg border hover:bg-muted disabled:opacity-50"
+              className="px-4 py-2 rounded-lg border hover:bg-muted"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground"
             >
-              {loading ? "Uploading..." : editVideo ? "Update" : "Upload"}
+              {loading ? "Processing..." : editVideo ? "Update" : "Upload"}
             </button>
           </div>
         </form>

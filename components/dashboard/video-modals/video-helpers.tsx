@@ -16,10 +16,11 @@ export async function uploadVideoThumbnail(file: File): Promise<string | null> {
 
 /**
  * Uploads a video to Bunny.net and returns both iframe and HLS URLs.
+ * Made onProgress optional to prevent "is not a function" errors.
  */
 export async function uploadVideoToBunny(
   file: File,
-  onProgress: (p: number) => void,
+  onProgress?: (p: number) => void, // Added '?' to make it optional
 ): Promise<{ iframeUrl: string; hlsUrl: string; videoId: string }> {
   const LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
@@ -39,7 +40,9 @@ export async function uploadVideoToBunny(
 
   if (!createRes.ok) throw new Error("Failed to create video entry on Bunny");
   const { guid: videoId } = await createRes.json();
-  onProgress(20);
+
+  // Safely call onProgress
+  if (typeof onProgress === "function") onProgress(20);
 
   // Step 2: Upload Binary
   const uploadRes = await fetch(
@@ -52,7 +55,9 @@ export async function uploadVideoToBunny(
   );
 
   if (!uploadRes.ok) throw new Error("Failed to upload video file to Bunny");
-  onProgress(100);
+
+  // Safely call onProgress
+  if (typeof onProgress === "function") onProgress(100);
 
   // Step 3: Construct URLs
   const hlsUrl = CDN_HOSTNAME
@@ -68,13 +73,17 @@ export async function uploadVideoToBunny(
 
 /**
  * Saves video data to Supabase.
- * Now includes support for video_hls_url.
+ * Supports the new video_hls_url column.
+ */
+/**
+ * Saves video data to Supabase.
+ * Smarter version: Extracts specific URLs even if the whole Bunny object is passed.
  */
 export async function saveVideo(
   formData: {
     title: string;
-    link: string;
-    video_hls_url?: string; // New field
+    link: any;
+    video_hls_url?: string;
     course_id: string;
     free: boolean;
   },
@@ -82,8 +91,22 @@ export async function saveVideo(
   editVideoId?: string,
 ) {
   const supabase = createClient();
+
+  let finalLink = formData.link;
+  let finalHls = formData.video_hls_url;
+
+  // CHECK: If the UI passed the whole object { iframeUrl, hlsUrl, videoId } as 'link'
+  if (formData.link && typeof formData.link === "object") {
+    finalLink = formData.link.iframeUrl;
+    finalHls = formData.link.hlsUrl;
+  }
+
   const videoData = {
-    ...formData,
+    title: formData.title,
+    course_id: formData.course_id,
+    free: formData.free,
+    link: finalLink, // This will now be the string "https://iframe..."
+    video_hls_url: finalHls, // This will now be the string "https://vz-..."
     thumbnail: thumbnailUrl,
     updated_at: new Date().toISOString(),
   };
