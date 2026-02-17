@@ -3,11 +3,11 @@ import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import { ReklamFormProps, LinkType } from "@/types/reklam";
-import { uploadReklamImage, uploadVideoToBunny } from "./reklam-upload";
+import { uploadVideoToBunny } from "./reklam-upload";
 import { MediaSelector } from "./media-selector";
 import { LinkSelector } from "./link-selector";
+import { uploadReklamImage } from "./upload-reklam-image";
 
-// Define internal data structure for type safety
 interface DbData {
   courses: Array<{ id: string; title: string }>;
   videos: Array<{ id: string; title: string }>;
