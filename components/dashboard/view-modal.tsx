@@ -3,13 +3,14 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-interface ViewModalProps<T extends Record<string, unknown>> {
+// Use 'object' to accept interfaces, and define T to allow indexing
+interface ViewModalProps<T extends object> {
   title: string;
   data: T;
   onClose: () => void;
 }
 
-export function ViewModal<T extends Record<string, unknown>>({
+export function ViewModal<T extends object>({
   title,
   data,
   onClose,
@@ -21,6 +22,9 @@ export function ViewModal<T extends Record<string, unknown>>({
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
+
+  // We extract the keys typed as keys of T
+  const keys = Object.keys(data) as Array<keyof T>;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -35,22 +39,23 @@ export function ViewModal<T extends Record<string, unknown>>({
           </button>
         </div>
         <div className="px-6 py-4 space-y-3">
-          {Object.entries(data).map(([key, value]) => (
-            <div key={key} className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-muted-foreground capitalize">
-                {key.replace(/_/g, " ")}
-              </span>
-              <span className="text-sm">
-                {typeof value === "boolean"
-                  ? value
-                    ? "Yes"
-                    : "No"
-                  : typeof value === "object" && value !== null
+          {keys.map((key) => {
+            const value = data[key];
+            return (
+              <div key={String(key)} className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-muted-foreground capitalize text-right">
+                  {String(key).replace(/_/g, " ")}
+                </span>
+                <span className="text-sm text-right">
+                  {typeof value === "boolean"
+                    ? value ? "بەڵێ" : "نەخێر"
+                    : typeof value === "object" && value !== null
                     ? JSON.stringify(value, null, 2)
-                    : String(value)}
-              </span>
-            </div>
-          ))}
+                    : String(value ?? "")}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

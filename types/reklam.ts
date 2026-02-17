@@ -7,6 +7,7 @@ export interface Reklam {
   link_type: string;
   video_hls_url: string;
   link_target: string;
+  video_bunny_id: string;
   display_order: number;
   is_active: boolean;
   background_color: string;

@@ -9,20 +9,7 @@ import { Pagination } from "./pagination";
 import { ReklamModal } from "./reklam-modals/reklam-modal";
 import { Eye, Trash2, Edit, ImageIcon, VideoIcon } from "lucide-react";
 import Image from "next/image";
-
-interface Reklam {
-  id: string;
-  title: string;
-  description: string;
-  image_url: string;
-  video_url: string;
-  video_bunny_id: string;
-  link_type: string;
-  link_target: string;
-  display_order: number;
-  is_active: boolean;
-  created_at: string;
-}
+import { Reklam } from "@/types/reklam";
 
 const LINK_TYPE_LABELS: Record<string, string> = {
   course: "خول",

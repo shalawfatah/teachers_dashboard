@@ -74,9 +74,7 @@ export function VideoModal({
       let videoLink = editVideo?.link || "";
       if (videoFile && !editVideo) {
         setProgress(25);
-        videoLink = await uploadVideoToBunny(videoFile, (p) =>
-          setProgress(25 + p * 0.5),
-        );
+        videoLink = await uploadVideoToBunny(videoFile);
         setProgress(75);
       }
       let thumbnailUrl = editVideo?.thumbnail || "";
