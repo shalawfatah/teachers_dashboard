@@ -3,31 +3,9 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUp, VideoIcon, X, Loader2 } from "lucide-react";
+import { LinkType, ReklamFormProps } from "@/types/reklam";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type LinkType = "course" | "video" | "document" | "external" | "none";
-
-interface Reklam {
-  id: string;
-  title: string;
-  description: string;
-  image_url: string;
-  video_url: string;
-  video_hls_url: string; // full HLS URL stored directly
-  link_type: LinkType;
-  link_target: string;
-  display_order: number;
-  is_active: boolean;
-}
-
-interface ReklamFormProps {
-  onSuccess: () => void;
-  onCancel: () => void;
-  editReklam?: Reklam | null;
-}
-
-// ─── Image upload (Supabase) ──────────────────────────────────────────────────
+// ─── Media Helpers ───────────────────────────────────────────────────────────
 
 async function uploadReklamImage(file: File): Promise<string> {
   const supabase = createClient();
@@ -41,21 +19,16 @@ async function uploadReklamImage(file: File): Promise<string> {
     .publicUrl;
 }
 
-// ─── Video upload (Bunny.net) → returns full HLS URL ─────────────────────────
-// Same pattern as your working videos table. Stored as:
-// https://vz-600296.b-cdn.net/{guid}/playlist.m3u8
-// expo-video plays this directly — no iframe, no conversion needed.
-
 async function uploadVideoToBunny(
   file: File,
   onProgress: (p: number) => void,
-): Promise<string> {
+): Promise<{ hlsUrl: string; iframeUrl: string }> {
   const LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
   const CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
+
   if (!LIBRARY_ID || !API_KEY) throw new Error("Bunny credentials missing");
 
-  // Step 1 — create video entry
   const createRes = await fetch(
     `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`,
     {
@@ -69,7 +42,6 @@ async function uploadVideoToBunny(
 
   onProgress(20);
 
-  // Step 2 — upload file
   const uploadRes = await fetch(
     `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`,
     { method: "PUT", headers: { AccessKey: API_KEY }, body: file },
@@ -78,11 +50,12 @@ async function uploadVideoToBunny(
 
   onProgress(100);
 
-  // Return full HLS URL — works directly with expo-video
-  if (CDN_HOSTNAME) {
-    return `https://${CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
-  }
-  return `https://vz-${LIBRARY_ID}.b-cdn.net/${videoId}/playlist.m3u8`;
+  const iframeUrl = `https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${videoId}`;
+  const hlsUrl = CDN_HOSTNAME
+    ? `https://${CDN_HOSTNAME}/${videoId}/playlist.m3u8`
+    : `https://vz-${LIBRARY_ID}.b-cdn.net/${videoId}/playlist.m3u8`;
+
+  return { hlsUrl, iframeUrl };
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -94,7 +67,6 @@ export function ReklamForm({
 }: ReklamFormProps) {
   const supabase = createClient();
 
-  // form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [linkType, setLinkType] = useState<LinkType>("none");
@@ -102,26 +74,21 @@ export function ReklamForm({
   const [displayOrder, setDisplayOrder] = useState(1);
   const [isActive, setIsActive] = useState(true);
 
-  // media state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoProgress, setVideoProgress] = useState(0);
 
-  // existing media (when editing)
   const [existingImageUrl, setExistingImageUrl] = useState("");
-  const [existingBunnyId, setExistingBunnyId] = useState("");
+  const [existingHlsUrl, setExistingHlsUrl] = useState("");
+  const [existingVideoUrl, setExistingVideoUrl] = useState("");
 
-  // dropdown options
   const [courses, setCourses] = useState<{ id: string; title: string }[]>([]);
   const [videos, setVideos] = useState<{ id: string; title: string }[]>([]);
-  const [documents, setDocuments] = useState<{ id: string; title: string }[]>(
-    [],
-  );
-
+  const [documents, setDocuments] = useState<
+    { id: string; title: string; file_url?: string }[]
+  >([]);
   const [saving, setSaving] = useState(false);
-
-  // ── Populate form when editing ────────────────────────────────────────────
 
   useEffect(() => {
     if (editReklam) {
@@ -132,7 +99,8 @@ export function ReklamForm({
       setDisplayOrder(editReklam.display_order);
       setIsActive(editReklam.is_active);
       setExistingImageUrl(editReklam.image_url || "");
-      setExistingBunnyId(editReklam.video_hls_url || ""); // already a full HLS URL
+      setExistingHlsUrl(editReklam.video_hls_url || "");
+      setExistingVideoUrl(editReklam.video_url || "");
       setImagePreview(editReklam.image_url || "");
     }
     fetchDropdowns();
@@ -153,7 +121,7 @@ export function ReklamForm({
       supabase.from("videos").select("id, title").order("title"),
       supabase
         .from("documents")
-        .select("id, title")
+        .select("id, title, file_url")
         .eq("teacher_id", user.id)
         .order("title"),
     ]);
@@ -163,50 +131,26 @@ export function ReklamForm({
     setDocuments(d || []);
   };
 
-  // ── Image handling ─────────────────────────────────────────────────────────
-
+  // ─── HANDLERS ───
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setImageFile(f);
     setImagePreview(URL.createObjectURL(f));
-    // Clear video if image selected
-    setVideoFile(null);
-    setVideoProgress(0);
+    setVideoFile(null); // Clear video if image is chosen
   };
-
-  const clearImage = () => {
-    setImageFile(null);
-    setImagePreview("");
-    setExistingImageUrl("");
-  };
-
-  // ── Video handling ─────────────────────────────────────────────────────────
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setVideoFile(f);
-    setVideoProgress(0);
-    // Clear image if video selected
-    setImageFile(null);
+    setImageFile(null); // Clear image if video is chosen
     setImagePreview("");
-    setExistingImageUrl("");
   };
-
-  const clearVideo = () => {
-    setVideoFile(null);
-    setVideoProgress(0);
-    setExistingBunnyId("");
-  };
-
-  // ── Submit ─────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const hasImage = imageFile || existingImageUrl;
-    const hasVideo = videoFile || existingBunnyId;
-    if (!hasImage && !hasVideo) {
+    if (!(imageFile || existingImageUrl) && !(videoFile || existingHlsUrl)) {
       alert("تکایە یان وێنە یان ڤیدیۆیەک هەڵبژێرە");
       return;
     }
@@ -219,17 +163,19 @@ export function ReklamForm({
       if (!user) throw new Error("Not authenticated");
 
       let imageUrl = existingImageUrl;
-      let hlsUrl = existingBunnyId; // existingBunnyId already holds the full HLS URL when editing
+      let hlsUrl = existingHlsUrl;
+      let iframeUrl = existingVideoUrl;
 
-      // Upload new image
       if (imageFile) {
         imageUrl = await uploadReklamImage(imageFile);
         hlsUrl = "";
+        iframeUrl = "";
       }
 
-      // Upload new video → returns full HLS URL directly
       if (videoFile) {
-        hlsUrl = await uploadVideoToBunny(videoFile, setVideoProgress);
+        const result = await uploadVideoToBunny(videoFile, setVideoProgress);
+        hlsUrl = result.hlsUrl;
+        iframeUrl = result.iframeUrl;
         imageUrl = "";
       }
 
@@ -237,7 +183,7 @@ export function ReklamForm({
         title,
         description,
         image_url: imageUrl || null,
-        video_url: null, // no longer storing iframe URLs
+        video_url: iframeUrl || null,
         video_hls_url: hlsUrl || null,
         link_type: linkType,
         link_target: linkTarget || null,
@@ -247,16 +193,10 @@ export function ReklamForm({
       };
 
       if (editReklam) {
-        const { error } = await supabase
-          .from("reklam")
-          .update(payload)
-          .eq("id", editReklam.id);
-        if (error) throw error;
+        await supabase.from("reklam").update(payload).eq("id", editReklam.id);
       } else {
-        const { error } = await supabase.from("reklam").insert([payload]);
-        if (error) throw error;
+        await supabase.from("reklam").insert([payload]);
       }
-
       onSuccess();
     } catch (err) {
       console.error(err);
@@ -266,71 +206,62 @@ export function ReklamForm({
     }
   };
 
-  // ─── Render ────────────────────────────────────────────────────────────────
-
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Title */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">ناونیشان *</label>
+        <label className="block text-sm font-medium mb-1.5 text-right">
+          ناونیشان *
+        </label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          placeholder="بنووسە..."
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full px-3 py-2 border rounded-lg text-sm text-right"
+          dir="rtl"
         />
       </div>
 
-      {/* Description */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">وەسف</label>
+        <label className="block text-sm font-medium mb-1.5 text-right">
+          وەسف
+        </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          placeholder="بنووسە..."
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+          className="w-full px-3 py-2 border rounded-lg text-sm resize-none text-right"
+          dir="rtl"
         />
       </div>
 
-      {/* Media — Image OR Video (mutually exclusive) */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium">میدیا *</label>
-        <p className="text-xs text-muted-foreground -mt-2">
-          یان وێنە یان ڤیدیۆ هەڵبژێرە — ئەگەر ڤیدیۆ بێت وێنە پێویست ناکات
-        </p>
-
+        <label className="block text-sm font-medium text-right">میدیا *</label>
         <div className="grid grid-cols-2 gap-3">
-          {/* Image upload */}
           <div className="relative">
             {imagePreview ? (
               <div className="relative rounded-lg overflow-hidden border h-32">
                 <img
                   src={imagePreview}
-                  alt=""
                   className="w-full h-full object-cover"
                 />
                 <button
                   type="button"
-                  onClick={clearImage}
-                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white"
+                  onClick={() => {
+                    setImagePreview("");
+                    setImageFile(null);
+                    setExistingImageUrl("");
+                  }}
+                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white"
                 >
                   <X className="w-3 h-3" />
                 </button>
-                <span className="absolute bottom-1.5 left-1.5 text-xs bg-black/60 text-white px-2 py-0.5 rounded-full">
-                  وێنە
-                </span>
               </div>
             ) : (
               <label
-                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors text-center px-3 ${videoFile || existingBunnyId ? "opacity-40 pointer-events-none" : "hover:border-primary/50 hover:bg-muted/30"}`}
+                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer ${videoFile || existingHlsUrl ? "opacity-40 pointer-events-none" : "hover:bg-muted/30"}`}
               >
-                <ImageUp className="w-7 h-7 text-muted-foreground mb-1" />
-                <span className="text-xs text-muted-foreground">
-                  وێنە ئەپلۆد بکە
-                </span>
+                <ImageUp className="w-7 h-7 text-muted-foreground" />
                 <input
                   type="file"
                   accept="image/*"
@@ -341,51 +272,30 @@ export function ReklamForm({
             )}
           </div>
 
-          {/* Video upload */}
           <div className="relative">
-            {videoFile || existingBunnyId ? (
-              <div className="relative flex flex-col items-center justify-center h-32 border rounded-lg bg-muted/40 px-3 text-center">
+            {videoFile || existingHlsUrl ? (
+              <div className="relative flex flex-col items-center justify-center h-32 border rounded-lg bg-muted/40 text-center px-2">
                 <VideoIcon className="w-7 h-7 text-primary mb-1" />
-                <span className="text-xs font-medium truncate max-w-full">
-                  {videoFile
-                    ? videoFile.name
-                    : `HLS: ...${existingBunnyId.slice(-12)}`}
+                <span className="text-[10px] truncate w-full">
+                  {videoFile ? videoFile.name : "ڤیدیۆی پاشەکەوتکراو"}
                 </span>
-                {videoProgress > 0 && videoProgress < 100 && (
-                  <div className="w-full mt-2">
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${videoProgress}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {videoProgress}%
-                    </span>
-                  </div>
-                )}
                 <button
                   type="button"
-                  onClick={clearVideo}
-                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white"
+                  onClick={() => {
+                    setVideoFile(null);
+                    setExistingHlsUrl("");
+                    setExistingVideoUrl("");
+                  }}
+                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white"
                 >
                   <X className="w-3 h-3" />
                 </button>
-                <span className="absolute bottom-1.5 left-1.5 text-xs bg-primary/80 text-white px-2 py-0.5 rounded-full">
-                  ڤیدیۆ
-                </span>
               </div>
             ) : (
               <label
-                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors text-center px-3 ${imageFile || imagePreview ? "opacity-40 pointer-events-none" : "hover:border-primary/50 hover:bg-muted/30"}`}
+                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer ${imagePreview ? "opacity-40 pointer-events-none" : "hover:bg-muted/30"}`}
               >
-                <VideoIcon className="w-7 h-7 text-muted-foreground mb-1" />
-                <span className="text-xs text-muted-foreground">
-                  ڤیدیۆ ئەپلۆد بکە
-                </span>
-                <span className="text-xs text-muted-foreground/60">
-                  Bunny.net
-                </span>
+                <VideoIcon className="w-7 h-7 text-muted-foreground" />
                 <input
                   type="file"
                   accept="video/*"
@@ -398,139 +308,90 @@ export function ReklamForm({
         </div>
       </div>
 
-      {/* Link Type */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5">کلیک دەچێتە</label>
-        <select
-          value={linkType}
-          onChange={(e) => {
-            setLinkType(e.target.value as LinkType);
-            setLinkTarget("");
-          }}
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-        >
-          <option value="none">بێ لینک</option>
-          <option value="course">خول</option>
-          <option value="video">ڤیدیۆ</option>
-          <option value="document">دۆکیومێنت (داگرتن)</option>
-          <option value="external">لینکی دەرەکی</option>
-        </select>
-      </div>
-
-      {/* Link Target (conditional) */}
-      {linkType === "course" && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1.5">خول *</label>
-          <select
-            value={linkTarget}
-            onChange={(e) => setLinkTarget(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          >
-            <option value="">خولێک هەڵبژێرە</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {linkType === "video" && (
-        <div>
-          <label className="block text-sm font-medium mb-1.5">ڤیدیۆ *</label>
-          <select
-            value={linkTarget}
-            onChange={(e) => setLinkTarget(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          >
-            <option value="">ڤیدیۆیەک هەڵبژێرە</option>
-            {videos.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {linkType === "document" && (
-        <div>
-          <label className="block text-sm font-medium mb-1.5">
-            دۆکیومێنت *
+          <label className="block text-sm font-medium mb-1.5 text-right">
+            کلیک دەچێتە
           </label>
           <select
-            value={linkTarget}
-            onChange={(e) => setLinkTarget(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg text-sm"
+            value={linkType}
+            onChange={(e) => {
+              setLinkType(e.target.value as LinkType);
+              setLinkTarget("");
+            }}
+            className="w-full px-3 py-2 border rounded-lg text-sm bg-white text-right"
+            dir="rtl"
           >
-            <option value="">دۆکیومێنتێک هەڵبژێرە</option>
-            {documents.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.title}
-              </option>
-            ))}
+            <option value="none">بێ لینک</option>
+            <option value="course">خول</option>
+            <option value="video">ڤیدیۆ</option>
+            <option value="document">داگرتن</option>
+            <option value="external">لینک</option>
           </select>
         </div>
-      )}
 
-      {linkType === "external" && (
-        <div>
-          <label className="block text-sm font-medium mb-1.5">لینک *</label>
-          <input
-            type="url"
-            value={linkTarget}
-            onChange={(e) => setLinkTarget(e.target.value)}
-            required
-            placeholder="https://..."
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
-        </div>
-      )}
-
-      {/* Display Order + Active */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">ڕیز *</label>
-          <input
-            type="number"
-            value={displayOrder}
-            onChange={(e) => setDisplayOrder(parseInt(e.target.value))}
-            required
-            min="1"
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
-        </div>
-        <div className="flex flex-col justify-end pb-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="w-4 h-4 accent-primary"
-            />
-            <span className="text-sm font-medium">چالاک</span>
-          </label>
-        </div>
+        {linkType !== "none" && (
+          <div className="animate-in fade-in slide-in-from-top-1">
+            <label className="block text-sm font-medium mb-1.5 text-right">
+              هەڵبژاردنی ئامانج
+            </label>
+            {linkType === "external" ? (
+              <input
+                type="url"
+                placeholder="https://..."
+                value={linkTarget}
+                onChange={(e) => setLinkTarget(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              />
+            ) : (
+              <select
+                value={linkTarget}
+                onChange={(e) => setLinkTarget(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg text-sm bg-white text-right"
+                dir="rtl"
+                required
+              >
+                <option value="">هەڵبژێرە...</option>
+                {linkType === "course" &&
+                  courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
+                {linkType === "video" &&
+                  videos.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.title}
+                    </option>
+                  ))}
+                {linkType === "document" &&
+                  documents.map((d) => (
+                    <option key={d.id} value={d.file_url}>
+                      {d.title}
+                    </option>
+                  ))}
+              </select>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Actions */}
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50 text-sm font-medium"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg disabled:opacity-50"
         >
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-          {saving ? "پاشەکەوتکردن..." : editReklam ? "نوێکردنەوە" : "زیادکردن"}
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            "پاشەکەوتکردن"
+          )}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2.5 border rounded-lg hover:bg-muted text-sm"
+          className="flex-1 px-4 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium"
         >
           پاشگەزبوونەوە
         </button>

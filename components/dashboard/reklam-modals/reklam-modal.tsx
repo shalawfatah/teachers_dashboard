@@ -3,27 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { ReklamForm } from "./reklam-form";
-
-interface Reklam {
-  id: string;
-  title: string;
-  description: string;
-  image_url: string;
-  video_url: string;
-  link_type: string;
-  link_target: string;
-  display_order: number;
-  is_active: boolean;
-  background_color: string;
-  text_color: string;
-}
-
-interface ReklamModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  editReklam?: Reklam | null;
-}
+import { ReklamModalProps } from "@/types/reklam";
 
 export function ReklamModal({
   isOpen,
