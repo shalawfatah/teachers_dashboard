@@ -126,7 +126,7 @@ export function VideoModal({
       <div className="bg-background border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
         <div className="sticky top-0 bg-background border-b px-6 py-4 flex items-center justify-between">
           <h3 className="text-xl font-semibold">
-            {editVideo ? "Edit Video" : "Upload Video"}
+            {editVideo ? "نوێکردنەوەی ڤیدیۆ" : "ئەپلۆدکردنی ڤیدیۆ"}
           </h3>
           <button
             onClick={onClose}
@@ -147,7 +147,7 @@ export function VideoModal({
           {!editVideo && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Video File *
+                فایلی ڤیدیۆ
               </label>
               <div className="border-2 border-dashed rounded-lg p-4 text-center">
                 <input
@@ -174,7 +174,9 @@ export function VideoModal({
                 >
                   <Upload className="w-8 h-8 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {videoFile ? videoFile.name : "Click to upload video"}
+                    {videoFile
+                      ? videoFile.name
+                      : "کلیلک بکە بۆ ئەپلۆدکردنی ڤیدیۆ"}
                   </span>
                 </label>
               </div>
@@ -183,7 +185,7 @@ export function VideoModal({
 
           {/* ... [Title and Course Select Section - remains the same] ... */}
           <div>
-            <label className="block text-sm font-medium mb-2">Title *</label>
+            <label className="block text-sm font-medium mb-2">ناونیشان</label>
             <input
               type="text"
               value={formData.title}
@@ -196,7 +198,9 @@ export function VideoModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Course *</label>
+            <label className="block text-sm font-medium mb-2">
+              خولی پەیوەندیدار
+            </label>
             <select
               value={formData.course_id}
               onChange={(e) =>
@@ -205,40 +209,13 @@ export function VideoModal({
               required
               className="w-full px-3 py-2 border rounded-lg bg-background"
             >
-              <option value="">Select course</option>
+              <option value="">خولێک هەڵبژێرە</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.title}
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Thumbnail</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) {
-                  setThumbnailFile(f);
-                  const r = new FileReader();
-                  r.onloadend = () => setThumbnailPreview(r.result as string);
-                  r.readAsDataURL(f);
-                }
-              }}
-              className="w-full px-3 py-2 border rounded-lg bg-background"
-            />
-            {thumbnailPreview && (
-              <Image
-                src={thumbnailPreview}
-                height={100}
-                width={100}
-                alt="Preview"
-                className="mt-2 h-32 object-cover rounded-lg"
-              />
-            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -252,7 +229,7 @@ export function VideoModal({
               className="w-4 h-4"
             />
             <label htmlFor="free" className="text-sm font-medium">
-              Free video
+              ڤیدیۆی خۆڕایی
             </label>
           </div>
 
@@ -275,19 +252,23 @@ export function VideoModal({
 
           <div className="flex gap-3 justify-end pt-4">
             <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground"
+            >
+              {loading
+                ? "پرۆسێسکردن..."
+                : editVideo
+                  ? "نوێکردنەوە"
+                  : "ئەپلۆدکردن"}
+            </button>
+            <button
               type="button"
               onClick={onClose}
               disabled={loading}
               className="px-4 py-2 rounded-lg border hover:bg-muted"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground"
-            >
-              {loading ? "Processing..." : editVideo ? "Update" : "Upload"}
+              رەتکردنەوە
             </button>
           </div>
         </form>

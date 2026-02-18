@@ -36,12 +36,12 @@ export function LinkSelector({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="block text-sm font-medium mb-1.5 text-right">
-          کلیک دەچێتە
+          ئامانجی ریکلام
         </label>
         <select
           value={linkType}
           dir="rtl"
-          className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+          className="w-full px-3 py-2 border rounded-lg text-sm bg-white text-black"
           onChange={(e) => {
             setLinkType(e.target.value as LinkType);
             setLinkTarget("");

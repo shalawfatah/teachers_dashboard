@@ -26,6 +26,12 @@ export function ReklamForm({
     (editReklam?.link_type as LinkType) || "none",
   );
   const [linkTarget, setLinkTarget] = useState(editReklam?.link_target || "");
+
+  // FIX: Explicitly set to true for new items, or the db value for editing
+  const [isActive, setIsActive] = useState<boolean>(
+    editReklam ? !!editReklam.is_active : true,
+  );
+
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(editReklam?.image_url || "");
@@ -36,13 +42,12 @@ export function ReklamForm({
     documents: [],
   });
 
-  // FIX: fetchDropdowns wrapped in useCallback to stabilize the reference
   const fetchDropdowns = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    
+
     const [{ data: courses }, { data: videos }, { data: docs }] =
       await Promise.all([
         supabase.from("courses").select("id, title").eq("teacher_id", user.id),
@@ -52,7 +57,7 @@ export function ReklamForm({
           .select("id, title, file_url")
           .eq("teacher_id", user.id),
       ]);
-      
+
     setDbData({
       courses: courses || [],
       videos: videos || [],
@@ -62,7 +67,7 @@ export function ReklamForm({
 
   useEffect(() => {
     fetchDropdowns();
-  }, [fetchDropdowns]); // Now safe to include here
+  }, [fetchDropdowns]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +76,7 @@ export function ReklamForm({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      
+
       let img = editReklam?.image_url,
         hls = editReklam?.video_hls_url,
         vid = editReklam?.video_url;
@@ -81,7 +86,7 @@ export function ReklamForm({
         hls = undefined;
         vid = undefined;
       }
-      
+
       if (videoFile) {
         const res = await uploadVideoToBunny(videoFile, () => { });
         hls = res.hlsUrl;
@@ -97,19 +102,18 @@ export function ReklamForm({
         video_hls_url: hls,
         link_type: linkType,
         link_target: linkTarget,
+        is_active: isActive, // Included in payload
         teacher_id: user?.id,
       };
 
-      // FIX: Changed ternary expression into a proper awaited call
       if (editReklam) {
         await supabase.from("reklam").update(payload).eq("id", editReklam.id);
       } else {
         await supabase.from("reklam").insert([payload]);
       }
-      
+
       onSuccess();
     } catch (err) {
-      // FIX: Log or use the error to satisfy the linter
       console.error("Save failed:", err);
       alert("Error saving");
     } finally {
@@ -172,11 +176,28 @@ export function ReklamForm({
         data={dbData}
       />
 
+      {/* Checkbox for is_active (Checked by default for new entries) */}
+      <div className="flex items-center gap-3 px-1 py-2">
+        <label
+          htmlFor="is_active"
+          className="text-sm font-medium cursor-pointer"
+        >
+          چالاک لەسەر سکرین
+        </label>
+        <input
+          id="is_active"
+          type="checkbox"
+          checked={isActive}
+          onChange={(e) => setIsActive(e.target.checked)}
+          className="w-5 h-5 accent-primary cursor-pointer"
+        />
+      </div>
+
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 bg-primary text-white p-2.5 rounded-lg"
+          className="flex-1 bg-primary text-white p-2.5 rounded-lg font-medium"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin mx-auto" />
@@ -187,7 +208,7 @@ export function ReklamForm({
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 border p-2.5 rounded-lg"
+          className="flex-1 border p-2.5 rounded-lg hover:bg-muted transition-colors"
         >
           پاشگەزبوونەوە
         </button>
