@@ -247,7 +247,7 @@ export function DocumentForm({
             <label className="cursor-pointer space-y-2 block">
               <FileUp className="w-10 h-10 text-muted-foreground/50 mx-auto" />
               <p className="text-sm text-muted-foreground">
-                فایل بکێشە ئێرە یان{" "}
+                فایل راکێشە ئێرە یان{" "}
                 <span className="text-primary font-medium">کلیک بکە</span>
               </p>
               <p className="text-xs text-muted-foreground">

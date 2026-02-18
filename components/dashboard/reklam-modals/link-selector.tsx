@@ -71,7 +71,7 @@ export function LinkSelector({
             <select
               value={linkTarget}
               onChange={(e) => setLinkTarget(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm bg-white text-right"
+              className="w-full px-3 py-2 border rounded-lg text-sm bg-white text-right text-black"
               dir="rtl"
               required
             >

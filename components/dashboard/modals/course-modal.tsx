@@ -91,7 +91,7 @@ export function CourseModal({
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium mb-2">Title *</label>
+            <label className="block text-sm font-medium mb-2">ناونیشان</label>
             <input
               type="text"
               value={formData.title}
@@ -116,7 +116,7 @@ export function CourseModal({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Grade *</label>
+              <label className="block text-sm font-medium mb-2">پۆل</label>
               <select
                 value={formData.grade}
                 onChange={(e) =>
@@ -125,7 +125,7 @@ export function CourseModal({
                 required
                 className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Select grade</option>
+                <option value="">پۆل هەڵبژێرە</option>
                 {GRADES.map((g) => (
                   <option key={g} value={g} className="capitalize">
                     {g}
@@ -134,9 +134,7 @@ export function CourseModal({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Subject *
-              </label>
+              <label className="block text-sm font-medium mb-2">بابەت</label>
               <select
                 value={formData.subject}
                 onChange={(e) =>
@@ -145,7 +143,7 @@ export function CourseModal({
                 required
                 className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Select subject</option>
+                <option value="">بابەت هەڵبژێرە</option>
                 {SUBJECTS.map((s) => (
                   <option key={s} value={s} className="capitalize">
                     {s}
@@ -174,14 +172,6 @@ export function CourseModal({
           </div>
           <div className="flex gap-3 justify-end pt-4">
             <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 rounded-lg border hover:bg-muted disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
               type="submit"
               disabled={loading}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
@@ -191,6 +181,14 @@ export function CourseModal({
                 : editCourse
                   ? "نوێکردنەوە"
                   : "تۆماربکە"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg border hover:bg-muted disabled:opacity-50"
+            >
+              پاشگەزبوونەوە
             </button>
           </div>
         </form>

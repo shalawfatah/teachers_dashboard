@@ -197,7 +197,7 @@ export function ReklamForm({
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 bg-primary text-white p-2.5 rounded-lg font-medium"
+          className="flex-1 bg-primary text-black p-2.5 rounded-lg font-medium"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin mx-auto" />
