@@ -9,3 +9,9 @@ export interface DocumentProps {
   file_size: number;
   file_type: string;
 }
+
+export interface DocumentFormProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+  editDocument?: DocumentProps | null;
+}

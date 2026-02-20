@@ -3,13 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FileUp, X, File } from "lucide-react";
-import type { Document } from "../documents-table";
-
-interface DocumentFormProps {
-  onSuccess: () => void;
-  onCancel: () => void;
-  editDocument?: Document | null;
-}
+import { DocumentFormProps } from "@/types/document";
 
 export function DocumentForm({
   onSuccess,
@@ -26,7 +20,6 @@ export function DocumentForm({
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  // FIX: fetchCourses wrapped in useCallback to prevent unnecessary re-renders
   const fetchCourses = useCallback(async () => {
     const {
       data: { user },
