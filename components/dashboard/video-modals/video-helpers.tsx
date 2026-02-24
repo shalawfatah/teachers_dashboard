@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
 
+interface BunnyUploadResult {
+  iframeUrl: string;
+  hlsUrl: string;
+  videoId: string;
+}
+
 export async function uploadVideoThumbnail(file: File): Promise<string | null> {
   const supabase = createClient();
   const fileExt = file.name.split(".").pop();
@@ -14,13 +20,9 @@ export async function uploadVideoThumbnail(file: File): Promise<string | null> {
   return publicUrl;
 }
 
-/**
- * Uploads a video to Bunny.net and returns both iframe and HLS URLs.
- * Made onProgress optional to prevent "is not a function" errors.
- */
 export async function uploadVideoToBunny(
   file: File,
-  onProgress?: (p: number) => void, // Added '?' to make it optional
+  onProgress?: (p: number) => void,
 ): Promise<{ iframeUrl: string; hlsUrl: string; videoId: string }> {
   const LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
   const API_KEY = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
@@ -28,7 +30,6 @@ export async function uploadVideoToBunny(
 
   if (!LIBRARY_ID || !API_KEY) throw new Error("Bunny credentials missing");
 
-  // Step 1: Create Video Entry
   const createRes = await fetch(
     `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`,
     {
@@ -41,10 +42,8 @@ export async function uploadVideoToBunny(
   if (!createRes.ok) throw new Error("Failed to create video entry on Bunny");
   const { guid: videoId } = await createRes.json();
 
-  // Safely call onProgress
   if (typeof onProgress === "function") onProgress(20);
 
-  // Step 2: Upload Binary
   const uploadRes = await fetch(
     `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`,
     {
@@ -56,10 +55,8 @@ export async function uploadVideoToBunny(
 
   if (!uploadRes.ok) throw new Error("Failed to upload video file to Bunny");
 
-  // Safely call onProgress
   if (typeof onProgress === "function") onProgress(100);
 
-  // Step 3: Construct URLs
   const hlsUrl = CDN_HOSTNAME
     ? `https://${CDN_HOSTNAME}/${videoId}/playlist.m3u8`
     : `https://vz-${LIBRARY_ID}.b-cdn.net/${videoId}/playlist.m3u8`;
@@ -71,18 +68,10 @@ export async function uploadVideoToBunny(
   };
 }
 
-/**
- * Saves video data to Supabase.
- * Supports the new video_hls_url column.
- */
-/**
- * Saves video data to Supabase.
- * Smarter version: Extracts specific URLs even if the whole Bunny object is passed.
- */
 export async function saveVideo(
   formData: {
     title: string;
-    link: any;
+    link: string | BunnyUploadResult;
     video_hls_url?: string;
     course_id: string;
     free: boolean;
@@ -95,7 +84,6 @@ export async function saveVideo(
   let finalLink = formData.link;
   let finalHls = formData.video_hls_url;
 
-  // CHECK: If the UI passed the whole object { iframeUrl, hlsUrl, videoId } as 'link'
   if (formData.link && typeof formData.link === "object") {
     finalLink = formData.link.iframeUrl;
     finalHls = formData.link.hlsUrl;
@@ -105,8 +93,8 @@ export async function saveVideo(
     title: formData.title,
     course_id: formData.course_id,
     free: formData.free,
-    link: finalLink, // This will now be the string "https://iframe..."
-    video_hls_url: finalHls, // This will now be the string "https://vz-..."
+    link: finalLink, 
+    video_hls_url: finalHls,
     thumbnail: thumbnailUrl,
     updated_at: new Date().toISOString(),
   };
@@ -123,9 +111,6 @@ export async function saveVideo(
   }
 }
 
-/**
- * Extracts video ID from Bunny.net URL (iframe or direct)
- */
 export function extractBunnyVideoId(url: string): string | null {
   const iframeMatch = url.match(/embed\/\d+\/([a-f0-9-]+)/i);
   if (iframeMatch) return iframeMatch[1];
@@ -141,9 +126,6 @@ export function extractBunnyVideoId(url: string): string | null {
   return null;
 }
 
-/**
- * Get video information from Bunny.net including all available URLs
- */
 export async function getBunnyVideoInfo(videoId: string): Promise<{
   embedUrl: string;
   hlsUrl: string;

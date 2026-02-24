@@ -1,3 +1,5 @@
+import { Document } from "@/components/dashboard/documents-table";
+
 export interface DocumentProps {
   id: string;
   teacher_id: string;
@@ -13,5 +15,5 @@ export interface DocumentProps {
 export interface DocumentFormProps {
   onSuccess: () => void;
   onCancel: () => void;
-  editDocument?: DocumentProps | null;
+  editDocument?: Document | null;
 }

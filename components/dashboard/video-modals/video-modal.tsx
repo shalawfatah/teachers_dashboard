@@ -8,22 +8,7 @@ import {
   getTeacherCourses,
   saveVideo,
 } from "./video-helpers";
-import Image from "next/image";
-
-interface VideoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  editVideo?: {
-    id: string;
-    title: string;
-    link: string;
-    video_hls_url?: string; // Add this to the interface
-    course_id: string;
-    free: boolean;
-    thumbnail?: string;
-  } | null;
-}
+import { VideoModalProps } from "@/types/video";
 
 export function VideoModal({
   isOpen,
@@ -37,8 +22,8 @@ export function VideoModal({
     free: false,
   });
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState("");
+  const [thumbnailFile] = useState<File | null>(null);
+  const [, setThumbnailPreview] = useState("");
   const [courses, setCourses] = useState<Array<{ id: string; title: string }>>(
     [],
   );
@@ -74,8 +59,7 @@ export function VideoModal({
     setProgress(0);
 
     try {
-      // 1. Handle Video Upload
-      let videoData: any = editVideo
+      let videoData = editVideo
         ? {
           iframeUrl: editVideo.link,
           hlsUrl: editVideo.video_hls_url,
@@ -83,25 +67,20 @@ export function VideoModal({
         : null;
 
       if (videoFile && !editVideo) {
-        // We pass setProgress as a callback so the bar updates during upload
         videoData = await uploadVideoToBunny(videoFile, (p) => setProgress(p));
       }
 
-      // 2. Handle Thumbnail Upload
       let thumbnailUrl = editVideo?.thumbnail || "";
       if (thumbnailFile) {
         const url = await uploadVideoThumbnail(thumbnailFile);
         if (url) thumbnailUrl = url;
       }
 
-      // 3. Save to Supabase
-      // We use the 'link' property to pass the videoData object
-      // Our updated 'saveVideo' helper will extract iframeUrl and hlsUrl from it.
       setProgress(95);
       await saveVideo(
         {
           ...formData,
-          link: videoData, // This is now { iframeUrl, hlsUrl, videoId } or the existing link
+          link: videoData,
         },
         thumbnailUrl,
         editVideo?.id,

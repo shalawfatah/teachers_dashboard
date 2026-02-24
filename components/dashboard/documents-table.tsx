@@ -12,6 +12,7 @@ import { DocumentModal } from "./document-modals/documents-modal";
 export interface Document {
   id: string;
   title: string;
+  teacher_id?: string;
   file_url: string;
   file_path: string;
   file_name: string;
