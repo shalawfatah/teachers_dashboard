@@ -59,10 +59,11 @@ export function VideoModal({
     setProgress(0);
 
     try {
-      let videoData = editVideo
+      let videoData: { iframeUrl: string; hlsUrl: string, videoId: string} | null = editVideo
         ? {
           iframeUrl: editVideo.link,
-          hlsUrl: editVideo.video_hls_url,
+          hlsUrl: editVideo.video_hls_url ?? "",
+          videoId: "",
         }
         : null;
 
@@ -77,6 +78,12 @@ export function VideoModal({
       }
 
       setProgress(95);
+
+      if (!videoData) {
+        setError("Video data is missing");
+        return;
+      }
+
       await saveVideo(
         {
           ...formData,
