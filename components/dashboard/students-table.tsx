@@ -7,15 +7,7 @@ import { TableActions } from "./table-actions";
 import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  verified: boolean;
-  teacher_id: string;
-  created_at: string;
-}
+import { Student } from "@/types/student_types";
 
 export function StudentsTable() {
   const {

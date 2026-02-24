@@ -1,16 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { UseTableDataOptions } from "@/types/table_types";
 import { useState, useEffect, useMemo, useCallback } from "react";
-
-interface UseTableDataOptions {
-  table: string;
-  select?: string;
-  filterByTeacher?: boolean;
-  orderBy?: string;
-  itemsPerPage?: number;
-  searchFields?: string[];
-}
 
 export function useTableData<T extends { id: string }>(
   options: UseTableDataOptions,
@@ -50,7 +42,7 @@ export function useTableData<T extends { id: string }>(
 
     const { data: result, error } = await query
       .order(orderBy, { ascending: false })
-      .returns<T[]>(); // ✅ moved here
+      .returns<T[]>();
 
     if (error) {
       console.error(error);

@@ -2,21 +2,7 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-
-interface Teacher {
-  id: string;
-  name: string;
-  expertise: string;
-  email: string;
-  thumbnail: string;
-  cover_img: string;
-}
-
-interface TeacherViewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  teacher: Teacher;
-}
+import { TeacherViewModalProps } from "@/types/teacher";
 
 export function TeacherViewModal({
   isOpen,
@@ -37,7 +23,6 @@ export function TeacherViewModal({
 
   if (!isOpen) return null;
 
-  // thumbnail and cover_img now store full URLs, use them directly
   const coverUrl = teacher.cover_img || null;
   const thumbnailUrl = teacher.thumbnail || null;
 

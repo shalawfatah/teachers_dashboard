@@ -27,3 +27,9 @@ export interface TeacherEditModalProps {
   teacher: Teacher;
   onUpdate: () => void;
 }
+
+export interface TeacherViewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  teacher: Teacher;
+}

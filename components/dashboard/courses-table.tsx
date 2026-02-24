@@ -8,17 +8,7 @@ import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { CourseModal } from "./modals/course-modal";
 import { Eye, Trash2, Edit } from "lucide-react";
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  grade: string;
-  subject: string;
-  teacher_id: string;
-  created_at: string;
-  thumbnail?: string;
-}
+import { Course } from "@/types/course";
 
 export function CoursesTable() {
   const {

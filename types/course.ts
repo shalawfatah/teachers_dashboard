@@ -21,3 +21,14 @@ export interface CourseProps {
   teacher_id: string;
   thumbnail: string;
 }
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  grade: string;
+  subject: string;
+  teacher_id: string;
+  created_at: string;
+  thumbnail?: string;
+}

@@ -8,17 +8,7 @@ import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { VideoModal } from "./video-modals/video-modal";
 import { Eye, Trash2, Edit } from "lucide-react";
-
-interface Video {
-  id: string;
-  title: string;
-  link: string;
-  course_id: string;
-  free: boolean;
-  created_at: string;
-  thumbnail?: string;
-  courses?: { title: string };
-}
+import { Video } from "@/types/video";
 
 export function VideosTable() {
   const {

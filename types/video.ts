@@ -26,3 +26,14 @@ export type VideoData = {
   iframeUrl: string;
   hlsUrl: string;
 } | null;
+
+export interface Video {
+  id: string;
+  title: string;
+  link: string;
+  course_id: string;
+  free: boolean;
+  created_at: string;
+  thumbnail?: string;
+  courses?: { title: string };
+}
