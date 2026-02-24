@@ -1,29 +1,5 @@
+import { LinkSelectorProps } from "@/types/link_types";
 import { LinkType } from "@/types/reklam";
-import { Dispatch, SetStateAction } from "react";
-
-interface SelectorItem {
-  id: string;
-  title: string;
-}
-
-// Update Document specifically because it uses file_url as value
-interface SelectorDocument extends SelectorItem {
-  file_url: string;
-}
-
-interface SelectorData {
-  courses: SelectorItem[];
-  videos: SelectorItem[];
-  documents: SelectorDocument[];
-}
-
-interface LinkSelectorProps {
-  linkType: LinkType;
-  setLinkType: Dispatch<SetStateAction<LinkType>>;
-  linkTarget: string;
-  setLinkTarget: (value: string) => void;
-  data: SelectorData;
-}
 
 export function LinkSelector({
   linkType,
