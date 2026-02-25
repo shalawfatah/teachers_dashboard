@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { DocumentFormProps } from "@/types/document";
-import { CourseProps } from "@/types/course";
-
-type CoursePickerItem = Pick<CourseProps, "id" | "title">;
+import { CoursePickerItem } from "@/types/course";
 
 export default function useDocumentForm({
   onSuccess,

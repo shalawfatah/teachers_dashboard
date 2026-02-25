@@ -13,7 +13,7 @@ export interface CourseModalProps {
 }
 
 export interface CourseProps {
-  id:string;
+  id: string;
   title: string;
   description: string;
   grade: 7 | 8 | 9 | 10 | 11 | 12;
@@ -32,3 +32,5 @@ export interface Course {
   created_at: string;
   thumbnail?: string;
 }
+
+export type CoursePickerItem = Pick<CourseProps, "id" | "title">;
