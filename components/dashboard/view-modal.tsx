@@ -3,14 +3,13 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-// Use 'object' to accept interfaces, and define T to allow indexing
 interface ViewModalProps<T extends object> {
   title: string;
   data: T;
   onClose: () => void;
 }
 
-export function ViewModal<T extends object>({
+export default function ViewModal<T extends object>({
   title,
   data,
   onClose,
@@ -23,7 +22,6 @@ export function ViewModal<T extends object>({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  // We extract the keys typed as keys of T
   const keys = Object.keys(data) as Array<keyof T>;
 
   return (

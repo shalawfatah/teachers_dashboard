@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
-import { ViewModal } from "./view-modal";
+import ViewModal from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { VideoModal } from "./video-modals/video-modal";

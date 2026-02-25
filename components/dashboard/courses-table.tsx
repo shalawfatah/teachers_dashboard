@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useTableData } from "./use-table-data";
 import { TableHeader } from "./table-header";
-import { ViewModal } from "./view-modal";
 import { DeleteDialog } from "./delete-dialog";
 import { Pagination } from "./pagination";
 import { CourseModal } from "./modals/course-modal";
 import { Eye, Trash2, Edit } from "lucide-react";
 import { Course } from "@/types/course";
+import ViewModal from "./view-modal";
 
 export function CoursesTable() {
   const {
@@ -75,7 +75,6 @@ export function CoursesTable() {
                     {new Date(course.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    {/* Inline action buttons - no separate component */}
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => setViewCourse(course)}
