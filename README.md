@@ -1,4 +1,5 @@
 # 📚 Teaching Platform - Full-Stack Education Management System
+## Web Dashboard
 
 A comprehensive educational platform built with **Next.js** (web dashboard) and **React Native/Expo** (mobile app) for teachers and students. Features course management, video hosting via Bunny.net, document sharing, promotional carousels, and real-time stats.
 
