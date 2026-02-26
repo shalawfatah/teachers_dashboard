@@ -196,7 +196,13 @@ export default function ReklamTable() {
       {viewReklam && (
         <ViewModal
           title="ڕێکلام"
-          data={viewReklam}
+          data={{
+            ناونیشان: viewReklam.title,
+            وەسف: viewReklam.description,
+            دۆخ: viewReklam.is_active ? "چالاک" : "ناچالاک",
+            وێنە: viewReklam.image_url,
+            ڤیدیۆ: viewReklam.video_hls_url,
+          }}
           onClose={() => setViewReklam(null)}
         />
       )}

@@ -1,6 +1,7 @@
 "use client";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import Image from "next/image";
 
 interface ViewModalProps<T extends object> {
   title: string;
@@ -39,6 +40,7 @@ export default function ViewModal<T extends object>({
           {keys.map((key) => {
             const value = data[key];
             const isVideo = String(key) === "ڤیدیۆ";
+            const isImage = String(key) === "وێنە";
 
             return (
               <div key={String(key)} className="flex flex-col gap-1">
@@ -52,6 +54,15 @@ export default function ViewModal<T extends object>({
                     className="w-full rounded-lg"
                     preload="metadata"
                   />
+                ) : isImage && typeof value === "string" ? (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <Image
+                      src={value}
+                      alt="وێنە"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <span className="text-sm text-right">
                     {typeof value === "boolean"
