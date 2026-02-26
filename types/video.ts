@@ -15,7 +15,7 @@ export interface VideoModalProps {
     id: string;
     title: string;
     link: string;
-    video_hls_url?: string; // Add this to the interface
+    video_hls_url?: string;
     course_id: string;
     free: boolean;
     thumbnail?: string;
@@ -35,5 +35,6 @@ export interface Video {
   free: boolean;
   created_at: string;
   thumbnail?: string;
+  video_hls_url?: string;
   courses?: { title: string };
 }

@@ -135,7 +135,7 @@ export function VideosTable() {
             ناونیشان: viewVideo.title,
             خۆڕایی: viewVideo.free ? "بەڵێ" : "نەخێر",
             "خولی پەیوەندیدار": viewVideo?.courses?.title,
-            ڤیدیۆ: viewVideo.link,
+            ڤیدیۆ: viewVideo.video_hls_url,
           }}
           onClose={() => setViewVideo(null)}
         />
