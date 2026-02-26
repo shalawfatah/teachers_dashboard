@@ -140,7 +140,7 @@ export function CoursesTable() {
 
       {deleteCourse && (
         <DeleteDialog
-          title="Delete Course"
+          title="سڕینەوەی خول"
           description={`دڵنیای دەتەوێت ئەم خولە بسڕیتەوە؟`}
           onConfirm={() => {
             deleteItem(deleteCourse.id);

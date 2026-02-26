@@ -38,16 +38,16 @@ export function DeleteDialog({
         </div>
         <div className="flex gap-3 justify-end mt-6">
           <button
-            onClick={onCancel}
-            className="px-4 py-2 rounded-lg border hover:bg-muted transition-colors"
-          >
-            Cancel
-          </button>
-          <button
             onClick={onConfirm}
             className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
           >
-            Delete
+            سڕینەوە
+          </button>
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg border hover:bg-muted transition-colors"
+          >
+            رەتکردنەوە
           </button>
         </div>
       </div>
