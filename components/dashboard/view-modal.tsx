@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import Image from "next/image";
 
 interface ViewModalProps<T extends object> {
   title: string;
@@ -39,18 +40,33 @@ export default function ViewModal<T extends object>({
         <div className="px-6 py-4 space-y-3">
           {keys.map((key) => {
             const value = data[key];
+            const isThumbnail = String(key) === "وێنە";
             return (
               <div key={String(key)} className="flex flex-col gap-1">
                 <span className="text-sm font-medium text-muted-foreground capitalize text-right">
                   {String(key).replace(/_/g, " ")}
                 </span>
-                <span className="text-sm text-right">
-                  {typeof value === "boolean"
-                    ? value ? "بەڵێ" : "نەخێر"
-                    : typeof value === "object" && value !== null
-                    ? JSON.stringify(value, null, 2)
-                    : String(value ?? "")}
-                </span>
+
+                {isThumbnail && typeof value === "string" ? (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <Image
+                      src={value}
+                      alt="thumbnail"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-sm text-right">
+                    {typeof value === "boolean"
+                      ? value
+                        ? "بەڵێ"
+                        : "نەخێر"
+                      : typeof value === "object" && value !== null
+                        ? JSON.stringify(value, null, 2)
+                        : String(value ?? "")}
+                  </span>
+                )}
               </div>
             );
           })}

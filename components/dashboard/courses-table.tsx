@@ -127,7 +127,13 @@ export function CoursesTable() {
       {viewCourse && (
         <ViewModal
           title="زانیاریی دەربارەی خول"
-          data={viewCourse}
+          data={{
+            "ناونیشان": viewCourse.title,
+            "وەسف": viewCourse.description,
+            "پۆل": viewCourse.grade,
+            "بابەت": viewCourse.subject,
+            "وێنە": viewCourse.thumbnail,
+          }}
           onClose={() => setViewCourse(null)}
         />
       )}
