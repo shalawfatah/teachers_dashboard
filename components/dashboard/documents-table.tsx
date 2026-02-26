@@ -194,7 +194,18 @@ export default function DocumentsTable() {
       {viewDoc && (
         <ViewModal
           title="دۆکیومێنت"
-          data={viewDoc}
+          data={{
+            ناونیشان: viewDoc.title,
+            "قەبارەی فایل":
+              viewDoc.file_size < 1024 * 1024
+                ? `${(viewDoc.file_size / 1024).toFixed(0)} KB`
+                : `${(viewDoc.file_size / (1024 * 1024)).toFixed(1)} MB`,
+            "جۆری فایل":
+              viewDoc.file_type.split("/")[1]?.toUpperCase() ??
+              viewDoc.file_type,
+            "خولی پەیوەندیدار": viewDoc.courses?.title,
+            "لینکی فایل": viewDoc.file_url,
+          }}
           onClose={() => setViewDoc(null)}
         />
       )}
