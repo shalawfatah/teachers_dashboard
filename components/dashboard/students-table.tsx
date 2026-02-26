@@ -90,7 +90,12 @@ export function StudentsTable() {
       {viewItem && (
         <ViewModal
           title="زانیاریی خوێندکار"
-          data={viewItem}
+          data={{
+            "ناو": viewItem.name,
+            "ئیمەیل": viewItem.email,
+            "وەسڵ": viewItem.verified ? "واسڵکراوە" : "واسڵ نەکراوە",
+            "پۆل": viewItem.grade,
+          }}
           onClose={() => setViewItem(null)}
         />
       )}
