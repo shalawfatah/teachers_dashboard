@@ -131,7 +131,12 @@ export function VideosTable() {
       {viewVideo && (
         <ViewModal
           title="زانیاریی لەسەر ڤیدیۆ"
-          data={viewVideo}
+          data={{
+            ناونیشان: viewVideo.title,
+            خۆڕایی: viewVideo.free ? "بەڵێ" : "نەخێر",
+            "خولی پەیوەندیدار": viewVideo?.courses?.title,
+            ڤیدیۆ: viewVideo.link,
+          }}
           onClose={() => setViewVideo(null)}
         />
       )}
