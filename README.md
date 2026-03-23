@@ -88,3 +88,4 @@ project-root/
 ---
 
 **Built with ❤️ for educators and students**
+*** THANKS ***
